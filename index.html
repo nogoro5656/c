@@ -264,7 +264,7 @@
             <div class="grid-2">
                 <div>
                     <label class="label">初期金額（円）</label>
-                    <input type="text" id="initialAmount" class="input" value="100,000">
+                    <input type="number" id="initialAmount" class="input" value="100000">
                 </div>
                 <div>
                     <label class="label">予測日数</label>
@@ -283,7 +283,7 @@
                 </div>
                 <div>
                     <label class="label">残高</label>
-                    <input type="text" id="actualAmount" class="input" placeholder="残高を入力">
+                    <input type="number" id="actualAmount" class="input" placeholder="残高を入力">
                 </div>
             </div>
             <button id="addButton" class="btn btn-primary">残高を記録</button>
@@ -342,34 +342,6 @@
         const todayString = today.toISOString().split('T')[0];
         document.getElementById('selectedDate').value = todayString;
 
-        // ローカルストレージからデータを読み込み
-        function loadData() {
-            const saved = localStorage.getItem('compoundCalculatorData');
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    initialAmount = data.initialAmount || 100000;
-                    days = data.days || 30;
-                    actualData = data.actualData || {};
-                    
-                    document.getElementById('initialAmount').value = formatInputValue(initialAmount);
-                    document.getElementById('days').value = days;
-                } catch (e) {
-                    console.log('データ読み込みエラー:', e);
-                }
-            }
-        }
-
-        // ローカルストレージにデータを保存
-        function saveData() {
-            const data = {
-                initialAmount,
-                days,
-                actualData
-            };
-            localStorage.setItem('compoundCalculatorData', JSON.stringify(data));
-        }
-
         // 数値フォーマット関数
         function formatNumber(num) {
             return new Intl.NumberFormat('ja-JP').format(Math.round(num));
@@ -383,14 +355,9 @@
             return formatted;
         }
 
-        function formatInputValue(value) {
-            if (!value) return '';
-            return new Intl.NumberFormat('ja-JP').format(value);
-        }
-
         function parseInputValue(value) {
             if (!value) return '';
-            return value.replace(/,/g, '');
+            return String(value).replace(/,/g, '');
         }
 
         // 複利計算
@@ -555,7 +522,6 @@
                 actualData[date] = Number(amount);
                 dateInput.value = todayString;
                 amountInput.value = '';
-                saveData();
                 updateDisplay();
             }
         }
@@ -563,7 +529,6 @@
         // 実績データ削除
         function removeActualData(date) {
             delete actualData[date];
-            saveData();
             updateDisplay();
         }
 
@@ -673,7 +638,6 @@
 
         // イベントリスナー設定
         document.addEventListener('DOMContentLoaded', function() {
-            loadData();
             updateDisplay();
             
             // 初期金額変更
@@ -681,8 +645,6 @@
                 const cleanValue = parseInputValue(e.target.value);
                 if (!isNaN(cleanValue) && cleanValue !== '') {
                     initialAmount = Number(cleanValue);
-                    e.target.value = formatInputValue(initialAmount);
-                    saveData();
                     updateDisplay();
                 }
             });
@@ -690,16 +652,7 @@
             // 予測日数変更
             document.getElementById('days').addEventListener('input', function(e) {
                 days = Number(e.target.value);
-                saveData();
                 updateDisplay();
-            });
-            
-            // 残高入力フォーマット
-            document.getElementById('actualAmount').addEventListener('input', function(e) {
-                const cleanValue = parseInputValue(e.target.value);
-                if (cleanValue !== '') {
-                    e.target.value = formatInputValue(cleanValue);
-                }
             });
             
             // 残高追加ボタン
