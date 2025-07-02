@@ -85,10 +85,6 @@
             margin-bottom: 12px;
         }
         
-        .input-group {
-            margin-bottom: 12px;
-        }
-        
         .label {
             display: block;
             font-size: 12px;
@@ -142,6 +138,7 @@
             border-radius: 4px;
             border: none;
             cursor: pointer;
+            transition: all 0.2s;
         }
         
         .btn-tab-active {
@@ -251,11 +248,40 @@
         .btn-delete:hover {
             color: #b91c1c;
         }
+        
+        .debug-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            max-width: 200px;
+            word-break: break-all;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .save-status {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="https://claude.ai" target="_blank" class="header-link">Claude.ai</a>
+        <a href="https://claude.ai" target="_blank" rel="noopener" class="header-link">Claude.ai</a>
         <h1 class="title">複利計算管理ツール</h1>
         
         <!-- 基本設定 -->
@@ -264,7 +290,7 @@
             <div class="grid-2">
                 <div>
                     <label class="label">初期金額（円）</label>
-                    <input type="number" id="initialAmount" class="input" value="100000">
+                    <input type="text" id="initialAmount" class="input" value="100,000">
                 </div>
                 <div>
                     <label class="label">予測日数</label>
@@ -283,7 +309,7 @@
                 </div>
                 <div>
                     <label class="label">残高</label>
-                    <input type="number" id="actualAmount" class="input" placeholder="残高を入力">
+                    <input type="text" id="actualAmount" class="input" placeholder="残高を入力">
                 </div>
             </div>
             <button id="addButton" class="btn btn-primary">残高を記録</button>
@@ -330,355 +356,613 @@
         </div>
     </div>
 
+    <!-- デバッグ情報表示エリア -->
+    <div id="debugInfo" class="debug-info"></div>
+    
+    <!-- 保存状況表示 -->
+    <div id="saveStatus" class="save-status">データを保存しました</div>
+
     <script>
-        // グローバル変数
-        let initialAmount = 100000;
-        let days = 30;
-        let actualData = {};
-        let summaryView = 'day';
-
-        // 今日の日付を設定
-        const today = new Date();
-        const todayString = today.toISOString().split('T')[0];
-        document.getElementById('selectedDate').value = todayString;
-
-        // 数値フォーマット関数
-        function formatNumber(num) {
-            return new Intl.NumberFormat('ja-JP').format(Math.round(num));
-        }
-
-        function formatNumberMobile(num) {
-            const formatted = new Intl.NumberFormat('ja-JP').format(Math.round(num));
-            if (Math.abs(num) >= 10000) {
-                return `${(num / 10000).toFixed(1)}万`;
-            }
-            return formatted;
-        }
-
-        function parseInputValue(value) {
-            if (!value) return '';
-            return String(value).replace(/,/g, '');
-        }
-
-        // 複利計算
-        function calculateCompoundInterest(principal, rate, time) {
-            return principal * Math.pow(1 + rate, time);
-        }
-
-        // 収支サマリー計算
-        function calculateSummary() {
-            const entries = Object.entries(actualData).map(([date, amount]) => ({
-                date: new Date(date),
-                dateStr: date,
-                amount,
-                profit: amount - initialAmount
-            })).sort((a, b) => a.date - b.date);
-
-            // 日別サマリー（前日比較）
-            const dailySummary = entries.map((entry, index) => {
-                let dayProfit = 0;
-                if (index === 0) {
-                    dayProfit = entry.amount - initialAmount;
-                } else {
-                    dayProfit = entry.amount - entries[index - 1].amount;
-                }
+        // アプリケーション状態
+        class AppState {
+            constructor() {
+                this.initialAmount = 100000;
+                this.days = 30;
+                this.actualData = {};
+                this.summaryView = 'day';
+                this.storageKey = 'compoundCalculatorData_v2';
+                this.debugMode = false;
                 
-                return {
-                    period: entry.dateStr,
-                    profit: dayProfit,
-                    amount: entry.amount
-                };
-            });
-
-            // 週別サマリー
-            const weeklyData = {};
-            entries.forEach(entry => {
-                const date = new Date(entry.date);
-                const monday = new Date(date);
-                monday.setDate(date.getDate() - date.getDay() + 1);
-                const weekKey = monday.toISOString().split('T')[0];
+                // 今日の日付設定
+                const today = new Date();
+                this.todayString = today.toISOString().split('T')[0];
                 
-                if (!weeklyData[weekKey]) {
-                    weeklyData[weekKey] = { entries: [], count: 0 };
-                }
-                
-                weeklyData[weekKey].entries.push(entry);
-                weeklyData[weekKey].count += 1;
-            });
-            
-            const weeklySummary = Object.entries(weeklyData).map(([week, data]) => {
-                const sortedEntries = data.entries.sort((a, b) => a.date - b.date);
-                const firstEntry = sortedEntries[0];
-                const lastEntry = sortedEntries[sortedEntries.length - 1];
-                
-                const firstEntryIndex = entries.findIndex(e => e.dateStr === firstEntry.dateStr);
-                const startAmount = firstEntryIndex > 0 ? entries[firstEntryIndex - 1].amount : initialAmount;
-                const endAmount = lastEntry.amount;
-                const weekProfit = endAmount - startAmount;
-                
-                return {
-                    period: `${week}の週`,
-                    profit: weekProfit,
-                    amount: endAmount,
-                    count: data.count
-                };
-            });
-
-            // 月別サマリー
-            const monthlyData = {};
-            entries.forEach(entry => {
-                const date = new Date(entry.date);
-                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                
-                if (!monthlyData[monthKey]) {
-                    monthlyData[monthKey] = { entries: [], count: 0 };
-                }
-                
-                monthlyData[monthKey].entries.push(entry);
-                monthlyData[monthKey].count += 1;
-            });
-            
-            const monthlySummary = Object.entries(monthlyData).map(([month, data]) => {
-                const sortedEntries = data.entries.sort((a, b) => a.date - b.date);
-                const firstEntry = sortedEntries[0];
-                const lastEntry = sortedEntries[sortedEntries.length - 1];
-                
-                const firstEntryIndex = entries.findIndex(e => e.dateStr === firstEntry.dateStr);
-                const startAmount = firstEntryIndex > 0 ? entries[firstEntryIndex - 1].amount : initialAmount;
-                const endAmount = lastEntry.amount;
-                const monthProfit = endAmount - startAmount;
-                
-                return {
-                    period: `${month.split('-')[0]}年${month.split('-')[1]}月`,
-                    profit: monthProfit,
-                    amount: endAmount,
-                    count: data.count
-                };
-            });
-
-            // 年別サマリー
-            const yearlyData = {};
-            entries.forEach(entry => {
-                const date = new Date(entry.date);
-                const yearKey = date.getFullYear().toString();
-                
-                if (!yearlyData[yearKey]) {
-                    yearlyData[yearKey] = { entries: [], count: 0 };
-                }
-                
-                yearlyData[yearKey].entries.push(entry);
-                yearlyData[yearKey].count += 1;
-            });
-            
-            const yearlySummary = Object.entries(yearlyData).map(([year, data]) => {
-                const sortedEntries = data.entries.sort((a, b) => a.date - b.date);
-                const firstEntry = sortedEntries[0];
-                const lastEntry = sortedEntries[sortedEntries.length - 1];
-                
-                const firstEntryIndex = entries.findIndex(e => e.dateStr === firstEntry.dateStr);
-                const startAmount = firstEntryIndex > 0 ? entries[firstEntryIndex - 1].amount : initialAmount;
-                const endAmount = lastEntry.amount;
-                const yearProfit = endAmount - startAmount;
-                
-                return {
-                    period: `${year}年`,
-                    profit: yearProfit,
-                    amount: endAmount,
-                    count: data.count
-                };
-            });
-
-            return { dailySummary, weeklySummary, monthlySummary, yearlySummary };
-        }
-
-        // サマリーデータ取得
-        function getSummaryData() {
-            const summary = calculateSummary();
-            let data;
-            switch (summaryView) {
-                case 'day': data = summary.dailySummary; break;
-                case 'week': data = summary.weeklySummary; break;
-                case 'month': data = summary.monthlySummary; break;
-                case 'year': data = summary.yearlySummary; break;
-                default: data = summary.dailySummary;
+                this.init();
             }
             
-            return data.sort((a, b) => {
-                if (summaryView === 'day') {
-                    return new Date(b.period) - new Date(a.period);
-                }
-                return b.period.localeCompare(a.period);
-            });
-        }
-
-        // 実績データ追加
-        function addActualData() {
-            const dateInput = document.getElementById('selectedDate');
-            const amountInput = document.getElementById('actualAmount');
-            const date = dateInput.value;
-            const amount = parseInputValue(amountInput.value);
+            init() {
+                this.setupDebugMode();
+                this.loadData();
+                this.setupEventListeners();
+                this.updateDisplay();
+                this.setTodayDate();
+                this.log('アプリケーション初期化完了');
+            }
             
-            if (date && amount) {
-                actualData[date] = Number(amount);
-                dateInput.value = todayString;
+            setupDebugMode() {
+                // デバッグモード切り替え（Ctrl+Shift+D）
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                        this.debugMode = !this.debugMode;
+                        document.getElementById('debugInfo').style.display = 
+                            this.debugMode ? 'block' : 'none';
+                        this.log('デバッグモード: ' + (this.debugMode ? 'ON' : 'OFF'));
+                    }
+                });
+            }
+            
+            log(message, data = null) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logMessage = `[${timestamp}] ${message}`;
+                console.log(logMessage, data || '');
+                
+                if (this.debugMode) {
+                    const debugElement = document.getElementById('debugInfo');
+                    debugElement.innerHTML = `${logMessage}<br>${debugElement.innerHTML}`.substring(0, 1000);
+                }
+            }
+            
+            setTodayDate() {
+                const dateInput = document.getElementById('selectedDate');
+                if (dateInput) {
+                    dateInput.value = this.todayString;
+                }
+            }
+            
+            showSaveStatus() {
+                const statusElement = document.getElementById('saveStatus');
+                statusElement.style.display = 'block';
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 1500);
+            }
+            
+            // データ保存（冗長化）
+            saveData() {
+                try {
+                    const data = {
+                        initialAmount: this.initialAmount,
+                        days: this.days,
+                        actualData: this.actualData,
+                        timestamp: new Date().toISOString(),
+                        version: '2.0'
+                    };
+                    
+                    // localStorage保存
+                    localStorage.setItem(this.storageKey, JSON.stringify(data));
+                    
+                    // 冗長化：sessionStorage保存
+                    sessionStorage.setItem(this.storageKey, JSON.stringify(data));
+                    
+                    this.log('データ保存成功', {
+                        dataSize: JSON.stringify(data).length,
+                        recordCount: Object.keys(this.actualData).length
+                    });
+                    
+                    this.showSaveStatus();
+                    return true;
+                    
+                } catch (error) {
+                    this.log('データ保存エラー', error);
+                    alert('データの保存に失敗しました: ' + error.message);
+                    return false;
+                }
+            }
+            
+            // データ読み込み（冗長化対応）
+            loadData() {
+                try {
+                    let saved = localStorage.getItem(this.storageKey);
+                    
+                    // localStorageから読み込めない場合はsessionStorageを試行
+                    if (!saved) {
+                        saved = sessionStorage.getItem(this.storageKey);
+                        this.log('sessionStorageからデータ復元');
+                    }
+                    
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        
+                        this.initialAmount = data.initialAmount || 100000;
+                        this.days = data.days || 30;
+                        this.actualData = data.actualData || {};
+                        
+                        this.log('データ読み込み成功', {
+                            version: data.version,
+                            recordCount: Object.keys(this.actualData).length,
+                            timestamp: data.timestamp
+                        });
+                        
+                        // DOM要素更新
+                        this.updateFormValues();
+                        
+                        return true;
+                    } else {
+                        this.log('保存データなし - デフォルト値使用');
+                        return false;
+                    }
+                    
+                } catch (error) {
+                    this.log('データ読み込みエラー', error);
+                    // エラー時はデフォルト値で継続
+                    return false;
+                }
+            }
+            
+            updateFormValues() {
+                const initialInput = document.getElementById('initialAmount');
+                const daysInput = document.getElementById('days');
+                
+                if (initialInput) {
+                    initialInput.value = this.formatInputValue(this.initialAmount);
+                }
+                if (daysInput) {
+                    daysInput.value = this.days;
+                }
+            }
+            
+            // 数値フォーマット関数
+            formatNumber(num) {
+                return new Intl.NumberFormat('ja-JP').format(Math.round(num));
+            }
+            
+            formatNumberMobile(num) {
+                const formatted = new Intl.NumberFormat('ja-JP').format(Math.round(num));
+                if (Math.abs(num) >= 10000) {
+                    return `${(num / 10000).toFixed(1)}万`;
+                }
+                return formatted;
+            }
+            
+            formatInputValue(value) {
+                if (!value && value !== 0) return '';
+                return new Intl.NumberFormat('ja-JP').format(value);
+            }
+            
+            parseInputValue(value) {
+                if (!value) return '';
+                return value.replace(/,/g, '');
+            }
+            
+            // 複利計算
+            calculateCompoundInterest(principal, rate, time) {
+                return principal * Math.pow(1 + rate, time);
+            }
+            
+            // 収支サマリー計算
+            calculateSummary() {
+                const entries = Object.entries(this.actualData).map(([date, amount]) => ({
+                    date: new Date(date),
+                    dateStr: date,
+                    amount,
+                    profit: amount - this.initialAmount
+                })).sort((a, b) => a.date - b.date);
+
+                // 日別サマリー（前日比較）
+                const dailySummary = entries.map((entry, index) => {
+                    let dayProfit = 0;
+                    if (index === 0) {
+                        dayProfit = entry.amount - this.initialAmount;
+                    } else {
+                        dayProfit = entry.amount - entries[index - 1].amount;
+                    }
+                    
+                    return {
+                        period: entry.dateStr,
+                        profit: dayProfit,
+                        amount: entry.amount
+                    };
+                });
+
+                // 週別サマリー
+                const weeklyData = {};
+                entries.forEach(entry => {
+                    const date = new Date(entry.date);
+                    const monday = new Date(date);
+                    monday.setDate(date.getDate() - date.getDay() + 1);
+                    const weekKey = monday.toISOString().split('T')[0];
+                    
+                    if (!weeklyData[weekKey]) {
+                        weeklyData[weekKey] = { entries: [], count: 0 };
+                    }
+                    
+                    weeklyData[weekKey].entries.push(entry);
+                    weeklyData[weekKey].count += 1;
+                });
+                
+                const weeklySummary = Object.entries(weeklyData).map(([week, data]) => {
+                    const sortedEntries = data.entries.sort((a, b) => a.date - b.date);
+                    const firstEntry = sortedEntries[0];
+                    const lastEntry = sortedEntries[sortedEntries.length - 1];
+                    
+                    const firstEntryIndex = entries.findIndex(e => e.dateStr === firstEntry.dateStr);
+                    const startAmount = firstEntryIndex > 0 ? entries[firstEntryIndex - 1].amount : this.initialAmount;
+                    const endAmount = lastEntry.amount;
+                    const weekProfit = endAmount - startAmount;
+                    
+                    return {
+                        period: `${week}の週`,
+                        profit: weekProfit,
+                        amount: endAmount,
+                        count: data.count
+                    };
+                });
+
+                // 月別サマリー
+                const monthlyData = {};
+                entries.forEach(entry => {
+                    const date = new Date(entry.date);
+                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    
+                    if (!monthlyData[monthKey]) {
+                        monthlyData[monthKey] = { entries: [], count: 0 };
+                    }
+                    
+                    monthlyData[monthKey].entries.push(entry);
+                    monthlyData[monthKey].count += 1;
+                });
+                
+                const monthlySummary = Object.entries(monthlyData).map(([month, data]) => {
+                    const sortedEntries = data.entries.sort((a, b) => a.date - b.date);
+                    const firstEntry = sortedEntries[0];
+                    const lastEntry = sortedEntries[sortedEntries.length - 1];
+                    
+                    const firstEntryIndex = entries.findIndex(e => e.dateStr === firstEntry.dateStr);
+                    const startAmount = firstEntryIndex > 0 ? entries[firstEntryIndex - 1].amount : this.initialAmount;
+                    const endAmount = lastEntry.amount;
+                    const monthProfit = endAmount - startAmount;
+                    
+                    return {
+                        period: `${month.split('-')[0]}年${month.split('-')[1]}月`,
+                        profit: monthProfit,
+                        amount: endAmount,
+                        count: data.count
+                    };
+                });
+
+                // 年別サマリー
+                const yearlyData = {};
+                entries.forEach(entry => {
+                    const date = new Date(entry.date);
+                    const yearKey = date.getFullYear().toString();
+                    
+                    if (!yearlyData[yearKey]) {
+                        yearlyData[yearKey] = { entries: [], count: 0 };
+                    }
+                    
+                    yearlyData[yearKey].entries.push(entry);
+                    yearlyData[yearKey].count += 1;
+                });
+                
+                const yearlySummary = Object.entries(yearlyData).map(([year, data]) => {
+                    const sortedEntries = data.entries.sort((a, b) => a.date - b.date);
+                    const firstEntry = sortedEntries[0];
+                    const lastEntry = sortedEntries[sortedEntries.length - 1];
+                    
+                    const firstEntryIndex = entries.findIndex(e => e.dateStr === firstEntry.dateStr);
+                    const startAmount = firstEntryIndex > 0 ? entries[firstEntryIndex - 1].amount : this.initialAmount;
+                    const endAmount = lastEntry.amount;
+                    const yearProfit = endAmount - startAmount;
+                    
+                    return {
+                        period: `${year}年`,
+                        profit: yearProfit,
+                        amount: endAmount,
+                        count: data.count
+                    };
+                });
+
+                return { dailySummary, weeklySummary, monthlySummary, yearlySummary };
+            }
+            
+            getSummaryData() {
+                const summary = this.calculateSummary();
+                let data;
+                
+                switch (this.summaryView) {
+                    case 'day': data = summary.dailySummary; break;
+                    case 'week': data = summary.weeklySummary; break;
+                    case 'month': data = summary.monthlySummary; break;
+                    case 'year': data = summary.yearlySummary; break;
+                    default: data = summary.dailySummary;
+                }
+                
+                return data.sort((a, b) => {
+                    if (this.summaryView === 'day') {
+                        return new Date(b.period) - new Date(a.period);
+                    }
+                    return b.period.localeCompare(a.period);
+                });
+            }
+            
+            // データ操作
+            addActualData() {
+                const dateInput = document.getElementById('selectedDate');
+                const amountInput = document.getElementById('actualAmount');
+                
+                if (!dateInput || !amountInput) {
+                    this.log('入力要素が見つかりません');
+                    return false;
+                }
+                
+                const date = dateInput.value;
+                const amount = this.parseInputValue(amountInput.value);
+                
+                if (!date || !amount) {
+                    alert('日付と残高を入力してください');
+                    return false;
+                }
+                
+                const numAmount = Number(amount);
+                if (isNaN(numAmount) || numAmount <= 0) {
+                    alert('有効な金額を入力してください');
+                    return false;
+                }
+                
+                this.actualData[date] = numAmount;
+                this.log('データ追加', { date, amount: numAmount });
+                
+                // フォームリセット
+                dateInput.value = this.todayString;
                 amountInput.value = '';
-                updateDisplay();
-            }
-        }
-
-        // 実績データ削除
-        function removeActualData(date) {
-            delete actualData[date];
-            updateDisplay();
-        }
-
-        // 表示更新
-        function updateDisplay() {
-            updateSummaryDisplay();
-            updateOverallSummary();
-        }
-
-        // 収支サマリー表示更新
-        function updateSummaryDisplay() {
-            const summaryData = getSummaryData();
-            const container = document.getElementById('summaryData');
-            
-            if (summaryData.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div style="font-size: 14px;">残高データがありません</div>
-                        <div style="font-size: 12px; margin-top: 4px;">残高を記録すると収支サマリーが表示されます</div>
-                    </div>
-                `;
-                return;
+                
+                // 保存と表示更新
+                this.saveData();
+                this.updateDisplay();
+                
+                return true;
             }
             
-            container.innerHTML = summaryData.map(item => `
-                <div class="summary-list-item">
-                    <div>
-                        <div style="font-size: 14px; font-weight: 500;">${item.period}</div>
-                        ${item.count ? `<div style="font-size: 12px; color: #6b7280;">${item.count}日分</div>` : ''}
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 12px; color: #6b7280;">¥${formatNumberMobile(item.amount)}</div>
-                        <div style="font-size: 14px; font-weight: 500;" class="${item.profit >= 0 ? 'text-green' : 'text-red'}">
-                            ${item.profit >= 0 ? '+' : ''}¥${formatNumberMobile(item.profit)}
+            removeActualData(date) {
+                if (this.actualData[date]) {
+                    delete this.actualData[date];
+                    this.log('データ削除', { date });
+                    this.saveData();
+                    this.updateDisplay();
+                }
+            }
+            
+            // 表示更新
+            updateDisplay() {
+                this.updateSummaryDisplay();
+                this.updateOverallSummary();
+            }
+            
+            updateSummaryDisplay() {
+                const summaryData = this.getSummaryData();
+                const container = document.getElementById('summaryData');
+                
+                if (!container) return;
+                
+                if (summaryData.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size: 14px;">残高データがありません</div>
+                            <div style="font-size: 12px; margin-top: 4px;">残高を記録すると収支サマリーが表示されます</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = summaryData.map(item => `
+                    <div class="summary-list-item">
+                        <div>
+                            <div style="font-size: 14px; font-weight: 500;">${item.period}</div>
+                            ${item.count ? `<div style="font-size: 12px; color: #6b7280;">${item.count}日分</div>` : ''}
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 12px; color: #6b7280;">¥${this.formatNumberMobile(item.amount)}</div>
+                            <div style="font-size: 14px; font-weight: 500;" class="${item.profit >= 0 ? 'text-green' : 'text-red'}">
+                                ${item.profit >= 0 ? '+' : ''}¥${this.formatNumberMobile(item.profit)}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
-        }
-
-        // 全体サマリー表示更新
-        function updateOverallSummary() {
-            const container = document.getElementById('overallSummary');
-            const actualCount = Object.keys(actualData).length;
+                `).join('');
+            }
             
-            if (actualCount === 0) {
+            updateOverallSummary() {
+                const container = document.getElementById('overallSummary');
+                if (!container) return;
+                
+                const actualCount = Object.keys(this.actualData).length;
+                
+                if (actualCount === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size: 14px;">残高データがありません</div>
+                            <div style="font-size: 12px; margin-top: 4px;">残高を記録すると統計情報が表示されます</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 統計計算
+                const budgetData = [];
+                for (let i = 0; i <= this.days; i++) {
+                    const date = new Date();
+                    date.setDate(date.getDate() + i);
+                    const budgetAmount = this.calculateCompoundInterest(this.initialAmount, 0.01, i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    budgetData.push({
+                        day: i,
+                        date: dateStr,
+                        budgetAmount: Math.round(budgetAmount),
+                        actualAmount: this.actualData[dateStr] || null
+                    });
+                }
+                
+                const stats = budgetData.reduce((acc, item) => {
+                    if (item.actualAmount) {
+                        acc.actualCount++;
+                        acc.totalActual += item.actualAmount;
+                        acc.totalBudget += item.budgetAmount;
+                    }
+                    return acc;
+                }, { actualCount: 0, totalActual: 0, totalBudget: 0 });
+                
+                const avgActual = stats.actualCount > 0 ? stats.totalActual / stats.actualCount : 0;
+                const avgBudget = stats.actualCount > 0 ? stats.totalBudget / stats.actualCount : 0;
+                const performance = avgBudget > 0 ? ((avgActual - avgBudget) / avgBudget * 100) : 0;
+                
                 container.innerHTML = `
-                    <div class="empty-state">
-                        <div style="font-size: 14px;">残高データがありません</div>
-                        <div style="font-size: 12px; margin-top: 4px;">残高を記録すると統計情報が表示されます</div>
+                    <div class="summary-grid">
+                        <div class="summary-item summary-green">
+                            <div class="summary-label text-green">記録日数</div>
+                            <div class="summary-value text-green">${actualCount}日</div>
+                        </div>
+                        <div class="summary-item summary-purple">
+                            <div class="summary-label text-purple">達成率</div>
+                            <div class="summary-value ${performance >= 0 ? 'text-green' : 'text-red'}">${performance.toFixed(1)}%</div>
+                        </div>
+                    </div>
+                    <div class="summary-grid" style="margin-top: 12px;">
+                        <div class="summary-item summary-blue">
+                            <div class="summary-label text-blue">平均残高</div>
+                            <div class="summary-value-sm text-blue">¥${this.formatNumberMobile(avgActual)}</div>
+                        </div>
+                        <div class="summary-item summary-yellow">
+                            <div class="summary-label text-yellow">平均予算</div>
+                            <div class="summary-value-sm text-yellow">¥${this.formatNumberMobile(avgBudget)}</div>
+                        </div>
                     </div>
                 `;
-                return;
             }
             
-            // 統計計算
-            const budgetData = [];
-            for (let i = 0; i <= days; i++) {
-                const date = new Date();
-                date.setDate(date.getDate() + i);
-                const budgetAmount = calculateCompoundInterest(initialAmount, 0.01, i);
-                const dateStr = date.toISOString().split('T')[0];
-                budgetData.push({
-                    day: i,
-                    date: dateStr,
-                    budgetAmount: Math.round(budgetAmount),
-                    actualAmount: actualData[dateStr] || null
-                });
-            }
-            
-            const stats = budgetData.reduce((acc, item) => {
-                if (item.actualAmount) {
-                    acc.actualCount++;
-                    acc.totalActual += item.actualAmount;
-                    acc.totalBudget += item.budgetAmount;
-                }
-                return acc;
-            }, { actualCount: 0, totalActual: 0, totalBudget: 0 });
-            
-            const avgActual = stats.actualCount > 0 ? stats.totalActual / stats.actualCount : 0;
-            const avgBudget = stats.actualCount > 0 ? stats.totalBudget / stats.actualCount : 0;
-            const performance = avgBudget > 0 ? ((avgActual - avgBudget) / avgBudget * 100) : 0;
-            
-            container.innerHTML = `
-                <div class="summary-grid">
-                    <div class="summary-item summary-green">
-                        <div class="summary-label text-green">記録日数</div>
-                        <div class="summary-value text-green">${actualCount}日</div>
-                    </div>
-                    <div class="summary-item summary-purple">
-                        <div class="summary-label text-purple">達成率</div>
-                        <div class="summary-value ${performance >= 0 ? 'text-green' : 'text-red'}">${performance.toFixed(1)}%</div>
-                    </div>
-                </div>
-                <div class="summary-grid" style="margin-top: 12px;">
-                    <div class="summary-item summary-blue">
-                        <div class="summary-label text-blue">平均残高</div>
-                        <div class="summary-value-sm text-blue">¥${formatNumberMobile(avgActual)}</div>
-                    </div>
-                    <div class="summary-item summary-yellow">
-                        <div class="summary-label text-yellow">平均予算</div>
-                        <div class="summary-value-sm text-yellow">¥${formatNumberMobile(avgBudget)}</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // イベントリスナー設定
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDisplay();
-            
-            // 初期金額変更
-            document.getElementById('initialAmount').addEventListener('input', function(e) {
-                const cleanValue = parseInputValue(e.target.value);
-                if (!isNaN(cleanValue) && cleanValue !== '') {
-                    initialAmount = Number(cleanValue);
-                    updateDisplay();
-                }
-            });
-            
-            // 予測日数変更
-            document.getElementById('days').addEventListener('input', function(e) {
-                days = Number(e.target.value);
-                updateDisplay();
-            });
-            
-            // 残高追加ボタン
-            document.getElementById('addButton').addEventListener('click', addActualData);
-            
-            // Enterキーで追加
-            document.getElementById('actualAmount').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    addActualData();
-                }
-            });
-            
-            // サマリータブ切り替え
-            document.querySelectorAll('[data-view]').forEach(button => {
-                button.addEventListener('click', function() {
-                    summaryView = this.getAttribute('data-view');
-                    
-                    // タブの見た目を更新
-                    document.querySelectorAll('[data-view]').forEach(btn => {
-                        btn.className = 'btn-tab btn-tab-inactive';
+            // イベントリスナー設定
+            setupEventListeners() {
+                // 初期金額変更
+                const initialInput = document.getElementById('initialAmount');
+                if (initialInput) {
+                    initialInput.addEventListener('input', (e) => {
+                        const cleanValue = this.parseInputValue(e.target.value);
+                        if (!isNaN(cleanValue) && cleanValue !== '') {
+                            this.initialAmount = Number(cleanValue);
+                            e.target.value = this.formatInputValue(this.initialAmount);
+                            this.saveData();
+                            this.updateDisplay();
+                            this.log('初期金額更新', this.initialAmount);
+                        }
                     });
-                    this.className = 'btn-tab btn-tab-active';
+                }
+                
+                // 予測日数変更
+                const daysInput = document.getElementById('days');
+                if (daysInput) {
+                    daysInput.addEventListener('input', (e) => {
+                        this.days = Number(e.target.value);
+                        this.saveData();
+                        this.updateDisplay();
+                        this.log('予測日数更新', this.days);
+                    });
+                }
+                
+                // 残高入力フォーマット
+                const amountInput = document.getElementById('actualAmount');
+                if (amountInput) {
+                    amountInput.addEventListener('input', (e) => {
+                        const cleanValue = this.parseInputValue(e.target.value);
+                        if (cleanValue !== '') {
+                            e.target.value = this.formatInputValue(cleanValue);
+                        }
+                    });
                     
-                    updateSummaryDisplay();
+                    // Enterキーで追加
+                    amountInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            this.addActualData();
+                        }
+                    });
+                }
+                
+                // 残高追加ボタン
+                const addButton = document.getElementById('addButton');
+                if (addButton) {
+                    addButton.addEventListener('click', () => {
+                        this.addActualData();
+                    });
+                }
+                
+                // サマリータブ切り替え
+                document.querySelectorAll('[data-view]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.summaryView = button.getAttribute('data-view');
+                        
+                        // タブの見た目を更新
+                        document.querySelectorAll('[data-view]').forEach(btn => {
+                            btn.className = 'btn-tab btn-tab-inactive';
+                        });
+                        button.className = 'btn-tab btn-tab-active';
+                        
+                        this.updateSummaryDisplay();
+                        this.log('表示切り替え', this.summaryView);
+                    });
                 });
-            });
+                
+                // 削除ボタンのイベント（動的に追加されるため、委譲イベント）
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('btn-delete')) {
+                        const date = e.target.getAttribute('data-date');
+                        if (date && confirm(`${date}のデータを削除しますか？`)) {
+                            this.removeActualData(date);
+                        }
+                    }
+                });
+                
+                // ページ離脱時の保存
+                window.addEventListener('beforeunload', () => {
+                    this.saveData();
+                });
+                
+                // ページ可視性変更時の保存
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        this.saveData();
+                    }
+                });
+                
+                this.log('イベントリスナー設定完了');
+            }
+        }
+        
+        // アプリケーション開始
+        let app;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM読み込み完了 - アプリケーション開始');
+            app = new AppState();
+            
+            // グローバルアクセス用（デバッグ用）
+            window.app = app;
+        });
+        
+        // エラーハンドリング
+        window.addEventListener('error', function(e) {
+            console.error('アプリケーションエラー:', e.error);
+            if (app) {
+                app.log('エラー発生', {
+                    message: e.message,
+                    filename: e.filename,
+                    lineno: e.lineno
+                });
+            }
+        });
+        
+        // 未処理のPromise拒否をキャッチ
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未処理のPromise拒否:', e.reason);
+            if (app) {
+                app.log('Promise拒否', e.reason);
+            }
         });
     </script>
 </body>
