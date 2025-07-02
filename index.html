@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>複利計算管理ツール</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -16,11 +17,12 @@
             background-color: #f9fafb;
             color: #111827;
             line-height: 1.5;
-            padding: 16px;
+            padding: 12px;
+            min-height: 100vh;
         }
         
         .container {
-            max-width: 448px;
+            max-width: 480px;
             margin: 0 auto;
             position: relative;
         }
@@ -29,13 +31,14 @@
             position: absolute;
             top: 0;
             right: 0;
-            font-size: 12px;
+            font-size: 11px;
             color: #6b7280;
             text-decoration: none;
             background-color: #f3f4f6;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 6px 10px;
+            border-radius: 6px;
             transition: all 0.2s;
+            z-index: 10;
         }
         
         .header-link:hover {
@@ -44,19 +47,21 @@
         }
         
         .title {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
             text-align: center;
-            margin: 32px 0 24px 0;
+            margin: 40px 0 20px 0;
             color: #1f2937;
+            padding: 0 10px;
         }
         
         .card {
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 16px;
             margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
         }
         
         .card-title {
@@ -79,7 +84,7 @@
         .grid-4 {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
+            gap: 6px;
             margin-bottom: 12px;
         }
         
@@ -88,32 +93,36 @@
             font-size: 12px;
             font-weight: 500;
             color: #4b5563;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         
         .input {
             width: 100%;
-            padding: 8px 12px;
-            font-size: 14px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
             outline: none;
+            -webkit-appearance: none;
+            background-color: white;
         }
         
         .input:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         
         .btn {
             width: 100%;
-            padding: 12px 16px;
-            font-size: 14px;
-            font-weight: 500;
+            padding: 14px 16px;
+            font-size: 16px;
+            font-weight: 600;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .btn-primary {
@@ -121,103 +130,133 @@
             color: white;
         }
         
-        .btn-primary:hover {
+        .btn-primary:hover, .btn-primary:active {
             background-color: #1d4ed8;
+            transform: translateY(-1px);
         }
         
         .btn-primary:disabled {
             background-color: #9ca3af;
             cursor: not-allowed;
+            transform: none;
         }
         
         .btn-tab {
-            padding: 4px 8px;
-            font-size: 12px;
-            border-radius: 4px;
+            padding: 8px 6px;
+            font-size: 11px;
+            font-weight: 500;
+            border-radius: 6px;
             border: none;
             cursor: pointer;
             transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 36px;
         }
         
         .btn-tab-active {
             background-color: #2563eb;
             color: white;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
         }
         
         .btn-tab-inactive {
-            background-color: #e5e7eb;
+            background-color: #f3f4f6;
             color: #374151;
         }
         
-        .btn-tab-inactive:hover {
-            background-color: #d1d5db;
+        .btn-tab-inactive:hover, .btn-tab-inactive:active {
+            background-color: #e5e7eb;
         }
         
         .summary-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
+            margin-bottom: 12px;
         }
         
         .summary-item {
             text-align: center;
-            padding: 12px;
+            padding: 12px 8px;
             border-radius: 8px;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
-        .summary-green { background-color: #f0fdf4; }
-        .summary-purple { background-color: #faf5ff; }
-        .summary-blue { background-color: #eff6ff; }
-        .summary-yellow { background-color: #fefce8; }
+        .summary-green { 
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+        }
+        .summary-purple { 
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+            border: 1px solid #ddd6fe;
+        }
+        .summary-blue { 
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1px solid #bfdbfe;
+        }
+        .summary-yellow { 
+            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+            border: 1px solid #fde68a;
+        }
         
         .summary-label {
-            font-size: 12px;
+            font-size: 10px;
+            font-weight: 500;
             margin-bottom: 4px;
+            opacity: 0.8;
         }
         
         .summary-value {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
+            line-height: 1.2;
         }
         
         .summary-value-sm {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
+            line-height: 1.2;
         }
         
         .text-green { color: #16a34a; }
         .text-purple { color: #9333ea; }
         .text-blue { color: #2563eb; }
-        .text-yellow { color: #ca8a04; }
+        .text-yellow { color: #d97706; }
         .text-red { color: #dc2626; }
         .text-gray { color: #6b7280; }
         
         .summary-list {
-            max-height: 192px;
+            max-height: 240px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .summary-list-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px;
+            padding: 12px;
             background-color: #f9fafb;
-            border-radius: 4px;
+            border-radius: 8px;
             margin-bottom: 8px;
+            border: 1px solid #f3f4f6;
         }
         
         .empty-state {
             text-align: center;
-            padding: 32px 0;
+            padding: 40px 20px;
             color: #6b7280;
         }
         
         .warning-card {
-            background-color: #fef2f2;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
             border: 1px solid #fecaca;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 16px;
+            margin-bottom: 20px;
         }
         
         .warning-title {
@@ -230,45 +269,133 @@
         .warning-text {
             font-size: 12px;
             color: #b91c1c;
-            line-height: 1.4;
+            line-height: 1.5;
         }
         
         .btn-delete {
             font-size: 10px;
             color: #dc2626;
             background-color: #fee2e2;
-            padding: 2px 4px;
-            border-radius: 2px;
+            padding: 4px 8px;
+            border-radius: 4px;
             border: none;
             cursor: pointer;
             margin-top: 4px;
+            -webkit-tap-highlight-color: transparent;
         }
         
-        .btn-delete:hover {
+        .btn-delete:hover, .btn-delete:active {
             color: #b91c1c;
             background-color: #fecaca;
+        }
+        
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+            animation: slideIn 0.3s ease-out;
         }
         
         .success-message {
             background-color: #10b981;
             color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            text-align: center;
-            display: none;
         }
         
         .error-message {
             background-color: #ef4444;
             color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            text-align: center;
-            display: none;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* モバイル専用スタイル */
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+            
+            .title {
+                font-size: 20px;
+                margin: 32px 0 16px 0;
+            }
+            
+            .card {
+                padding: 14px;
+                margin-bottom: 14px;
+            }
+            
+            .summary-item {
+                padding: 10px 6px;
+                min-height: 65px;
+            }
+            
+            .summary-value {
+                font-size: 14px;
+            }
+            
+            .summary-value-sm {
+                font-size: 12px;
+            }
+            
+            .summary-label {
+                font-size: 9px;
+            }
+            
+            .btn-tab {
+                font-size: 10px;
+                padding: 6px 4px;
+            }
+            
+            .chart-wrapper {
+                height: 250px;
+            }
+        }
+        
+        /* 超小画面対応 */
+        @media (max-width: 360px) {
+            .summary-grid {
+                gap: 8px;
+            }
+            
+            .summary-item {
+                padding: 8px 4px;
+                min-height: 60px;
+            }
+            
+            .summary-value {
+                font-size: 13px;
+            }
+            
+            .summary-value-sm {
+                font-size: 11px;
+            }
         }
     </style>
 </head>
@@ -278,8 +405,8 @@
         <h1 class="title">複利計算管理ツール</h1>
         
         <!-- メッセージ表示エリア -->
-        <div id="successMessage" class="success-message"></div>
-        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="message success-message"></div>
+        <div id="errorMessage" class="message error-message"></div>
         
         <!-- 基本設定 -->
         <div class="card">
@@ -340,6 +467,14 @@
             </div>
         </div>
 
+        <!-- グラフ -->
+        <div class="chart-container">
+            <h2 class="card-title">予算・残高グラフ</h2>
+            <div class="chart-wrapper">
+                <canvas id="chart"></canvas>
+            </div>
+        </div>
+
         <!-- 注意事項 -->
         <div class="warning-card">
             <h3 class="warning-title">⚠️ 投資リスクについて</h3>
@@ -357,7 +492,8 @@
         let days = 30;
         let actualData = {};
         let summaryView = 'day';
-        const storageKey = 'compoundCalculatorData_v4';
+        let chart = null;
+        const storageKey = 'compoundCalculatorData_v5';
         
         // 今日の日付
         const today = new Date();
@@ -369,8 +505,13 @@
         }
         
         function formatNumberMobile(num) {
-            if (Math.abs(num) >= 10000) {
+            const absNum = Math.abs(num);
+            if (absNum >= 100000000) {
+                return `${(num / 100000000).toFixed(1)}億`;
+            } else if (absNum >= 10000) {
                 return `${(num / 10000).toFixed(1)}万`;
+            } else if (absNum >= 1000) {
+                return `${(num / 1000).toFixed(0)}k`;
             }
             return formatNumber(num);
         }
@@ -380,16 +521,18 @@
             const successEl = document.getElementById('successMessage');
             const errorEl = document.getElementById('errorMessage');
             
+            // 既存のメッセージを非表示
+            successEl.style.display = 'none';
+            errorEl.style.display = 'none';
+            
             if (isError) {
                 errorEl.textContent = text;
                 errorEl.style.display = 'block';
-                successEl.style.display = 'none';
-                setTimeout(() => errorEl.style.display = 'none', 3000);
+                setTimeout(() => errorEl.style.display = 'none', 4000);
             } else {
                 successEl.textContent = text;
                 successEl.style.display = 'block';
-                errorEl.style.display = 'none';
-                setTimeout(() => successEl.style.display = 'none', 2000);
+                setTimeout(() => successEl.style.display = 'none', 3000);
             }
         }
         
@@ -401,7 +544,7 @@
                     days: days,
                     actualData: actualData,
                     timestamp: new Date().toISOString(),
-                    version: '4.0'
+                    version: '5.0'
                 };
                 
                 localStorage.setItem(storageKey, JSON.stringify(data));
@@ -659,7 +802,6 @@
             // データ追加
             actualData[date] = amount;
             console.log('データ追加完了:', { date, amount });
-            console.log('現在のactualData:', actualData);
             
             // フォームリセット
             amountInput.value = '';
@@ -668,6 +810,7 @@
             // 保存と表示更新
             if (saveData()) {
                 updateDisplay();
+                updateChart();
                 showMessage(`${date}の残高 ¥${formatNumber(amount)} を記録しました`);
                 console.log('追加処理完了');
             } else {
@@ -685,6 +828,7 @@
                 delete actualData[date];
                 saveData();
                 updateDisplay();
+                updateChart();
                 showMessage(`${date}のデータを削除しました`);
                 console.log('削除完了');
             }
@@ -732,7 +876,7 @@
             `).join('');
         }
         
-        // 全体サマリー更新
+        // 全体サマリー更新（モバイル最適化）
         function updateOverallSummary() {
             const container = document.getElementById('overallSummary');
             if (!container) return;
@@ -777,6 +921,7 @@
             const avgBudget = stats.actualCount > 0 ? stats.totalBudget / stats.actualCount : 0;
             const performance = avgBudget > 0 ? ((avgActual - avgBudget) / avgBudget * 100) : 0;
             
+            // モバイル対応のレスポンシブ表示
             container.innerHTML = `
                 <div class="summary-grid">
                     <div class="summary-item summary-green">
@@ -788,7 +933,7 @@
                         <div class="summary-value ${performance >= 0 ? 'text-green' : 'text-red'}">${performance.toFixed(1)}%</div>
                     </div>
                 </div>
-                <div class="summary-grid" style="margin-top: 12px;">
+                <div class="summary-grid">
                     <div class="summary-item summary-blue">
                         <div class="summary-label text-blue">平均残高</div>
                         <div class="summary-value-sm text-blue">¥${formatNumberMobile(avgActual)}</div>
@@ -799,6 +944,144 @@
                     </div>
                 </div>
             `;
+        }
+        
+        // グラフ更新
+        function updateChart() {
+            const ctx = document.getElementById('chart');
+            if (!ctx) return;
+            
+            // 既存のチャートを破棄
+            if (chart) {
+                chart.destroy();
+            }
+            
+            // グラフデータ生成
+            const budgetData = [];
+            const labels = [];
+            const budgetAmounts = [];
+            const actualAmounts = [];
+            
+            for (let i = 0; i <= Math.min(days, 60); i++) { // 最大60日で制限
+                const date = new Date();
+                date.setDate(date.getDate() + i);
+                const budgetAmount = calculateCompoundInterest(initialAmount, 0.01, i);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                labels.push(`${i}日`);
+                budgetAmounts.push(Math.round(budgetAmount));
+                actualAmounts.push(actualData[dateStr] || null);
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '予算',
+                            data: budgetAmounts,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            tension: 0.1
+                        },
+                        {
+                            label: '残高',
+                            data: actualAmounts,
+                            borderColor: '#16a34a',
+                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                            borderWidth: 3,
+                            fill: false,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#16a34a',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            spanGaps: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed.y;
+                                    if (value === null) return null;
+                                    return `${context.dataset.label}: ¥${formatNumberMobile(value)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '経過日数',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                },
+                                maxTicksLimit: 8
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '金額（円）',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                },
+                                callback: function(value) {
+                                    return '¥' + formatNumberMobile(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
         
         // イベントリスナー設定
@@ -812,6 +1095,7 @@
                         initialAmount = value;
                         saveData();
                         updateDisplay();
+                        updateChart();
                     }
                 });
             }
@@ -825,6 +1109,7 @@
                         days = value;
                         saveData();
                         updateDisplay();
+                        updateChart();
                     }
                 });
             }
@@ -889,6 +1174,7 @@
             
             // 初期表示更新
             updateDisplay();
+            updateChart();
             
             console.log('アプリケーション初期化完了');
         }
@@ -918,6 +1204,7 @@
                 actualData[testDate] = testAmount;
                 saveData();
                 updateDisplay();
+                updateChart();
                 showMessage(`テストデータ追加: ${testDate} - ¥${formatNumber(testAmount)}`);
             },
             clearData: () => {
@@ -925,6 +1212,7 @@
                     actualData = {};
                     saveData();
                     updateDisplay();
+                    updateChart();
                     showMessage('全データを削除しました');
                 }
             }
