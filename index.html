@@ -642,33 +642,53 @@
                 
                 if (!dateInput || !amountInput) {
                     console.error('入力要素が見つかりません');
+                    alert('入力フィールドが見つかりません');
                     return false;
                 }
                 
                 const date = dateInput.value;
                 const amount = amountInput.value;
                 
-                if (!date || !amount) {
-                    alert('日付と残高を入力してください');
+                console.log('入力値確認:', { date, amount });
+                
+                if (!date) {
+                    alert('日付を選択してください');
+                    return false;
+                }
+                
+                if (!amount || amount.trim() === '') {
+                    alert('残高を入力してください');
                     return false;
                 }
                 
                 const numAmount = Number(amount);
-                if (isNaN(numAmount) || numAmount <= 0) {
-                    alert('有効な金額を入力してください');
+                console.log('数値変換:', { amount, numAmount, isNaN: isNaN(numAmount) });
+                
+                if (isNaN(numAmount)) {
+                    alert('有効な数値を入力してください');
                     return false;
                 }
                 
+                if (numAmount <= 0) {
+                    alert('正の数値を入力してください');
+                    return false;
+                }
+                
+                // データ追加
                 this.actualData[date] = numAmount;
-                console.log('データ追加:', { date, amount: numAmount });
+                console.log('データ追加成功:', { date, amount: numAmount });
+                console.log('現在のactualData:', this.actualData);
                 
                 // フォームリセット
                 dateInput.value = this.todayString;
                 amountInput.value = '';
                 
                 // 保存と表示更新
-                this.saveData();
+                const saveResult = this.saveData();
+                console.log('保存結果:', saveResult);
+                
                 this.updateDisplay();
+                console.log('表示更新完了');
                 
                 return true;
             }
@@ -715,6 +735,9 @@
                             <div style="font-size: 14px; font-weight: 500;" class="${item.profit >= 0 ? 'text-green' : 'text-red'}">
                                 ${item.profit >= 0 ? '+' : ''}¥${this.formatNumberMobile(item.profit)}
                             </div>
+                            ${this.summaryView === 'day' ? `
+                                <button class="btn-delete" data-date="${item.period}" onclick="app.removeActualData('${item.period}')">削除</button>
+                            ` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -812,4 +835,5 @@
                         if (!isNaN(value) && value > 0) {
                             this.days = value;
                             this.saveData();
-                            this.updateDisplay();             
+                            this.updateDisplay();
+                
