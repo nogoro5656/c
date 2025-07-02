@@ -249,21 +249,6 @@
             color: #b91c1c;
         }
         
-        .debug-info {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            max-width: 200px;
-            word-break: break-all;
-            z-index: 1000;
-            display: none;
-        }
-        
         .save-status {
             position: fixed;
             top: 50%;
@@ -290,7 +275,7 @@
             <div class="grid-2">
                 <div>
                     <label class="label">初期金額（円）</label>
-                    <input type="text" id="initialAmount" class="input" value="100,000">
+                    <input type="number" id="initialAmount" class="input" value="100000" min="1" step="1000">
                 </div>
                 <div>
                     <label class="label">予測日数</label>
@@ -308,8 +293,8 @@
                     <input type="date" id="selectedDate" class="input">
                 </div>
                 <div>
-                    <label class="label">残高</label>
-                    <input type="text" id="actualAmount" class="input" placeholder="残高を入力">
+                    <label class="label">残高（円）</label>
+                    <input type="number" id="actualAmount" class="input" placeholder="残高を入力" min="0" step="1000">
                 </div>
             </div>
             <button id="addButton" class="btn btn-primary">残高を記録</button>
@@ -356,60 +341,34 @@
         </div>
     </div>
 
-    <!-- デバッグ情報表示エリア -->
-    <div id="debugInfo" class="debug-info"></div>
-    
     <!-- 保存状況表示 -->
     <div id="saveStatus" class="save-status">データを保存しました</div>
 
     <script>
-        // アプリケーション状態
-        class AppState {
+        // アプリケーション状態管理クラス
+        class CompoundCalculatorApp {
             constructor() {
+                // 基本設定
                 this.initialAmount = 100000;
                 this.days = 30;
                 this.actualData = {};
                 this.summaryView = 'day';
-                this.storageKey = 'compoundCalculatorData_v2';
-                this.debugMode = false;
+                this.storageKey = 'compoundCalculatorData_v3';
                 
-                // 今日の日付設定
+                // 今日の日付
                 const today = new Date();
                 this.todayString = today.toISOString().split('T')[0];
                 
-                this.init();
+                this.initialize();
             }
             
-            init() {
-                this.setupDebugMode();
+            initialize() {
+                console.log('アプリケーション初期化開始');
                 this.loadData();
                 this.setupEventListeners();
-                this.updateDisplay();
                 this.setTodayDate();
-                this.log('アプリケーション初期化完了');
-            }
-            
-            setupDebugMode() {
-                // デバッグモード切り替え（Ctrl+Shift+D）
-                document.addEventListener('keydown', (e) => {
-                    if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-                        this.debugMode = !this.debugMode;
-                        document.getElementById('debugInfo').style.display = 
-                            this.debugMode ? 'block' : 'none';
-                        this.log('デバッグモード: ' + (this.debugMode ? 'ON' : 'OFF'));
-                    }
-                });
-            }
-            
-            log(message, data = null) {
-                const timestamp = new Date().toLocaleTimeString();
-                const logMessage = `[${timestamp}] ${message}`;
-                console.log(logMessage, data || '');
-                
-                if (this.debugMode) {
-                    const debugElement = document.getElementById('debugInfo');
-                    debugElement.innerHTML = `${logMessage}<br>${debugElement.innerHTML}`.substring(0, 1000);
-                }
+                this.updateDisplay();
+                console.log('アプリケーション初期化完了');
             }
             
             setTodayDate() {
@@ -421,13 +380,15 @@
             
             showSaveStatus() {
                 const statusElement = document.getElementById('saveStatus');
-                statusElement.style.display = 'block';
-                setTimeout(() => {
-                    statusElement.style.display = 'none';
-                }, 1500);
+                if (statusElement) {
+                    statusElement.style.display = 'block';
+                    setTimeout(() => {
+                        statusElement.style.display = 'none';
+                    }, 1500);
+                }
             }
             
-            // データ保存（冗長化）
+            // データ保存
             saveData() {
                 try {
                     const data = {
@@ -435,7 +396,7 @@
                         days: this.days,
                         actualData: this.actualData,
                         timestamp: new Date().toISOString(),
-                        version: '2.0'
+                        version: '3.0'
                     };
                     
                     // localStorage保存
@@ -444,22 +405,23 @@
                     // 冗長化：sessionStorage保存
                     sessionStorage.setItem(this.storageKey, JSON.stringify(data));
                     
-                    this.log('データ保存成功', {
-                        dataSize: JSON.stringify(data).length,
-                        recordCount: Object.keys(this.actualData).length
+                    console.log('データ保存成功:', {
+                        recordCount: Object.keys(this.actualData).length,
+                        initialAmount: this.initialAmount,
+                        days: this.days
                     });
                     
                     this.showSaveStatus();
                     return true;
                     
                 } catch (error) {
-                    this.log('データ保存エラー', error);
+                    console.error('データ保存エラー:', error);
                     alert('データの保存に失敗しました: ' + error.message);
                     return false;
                 }
             }
             
-            // データ読み込み（冗長化対応）
+            // データ読み込み
             loadData() {
                 try {
                     let saved = localStorage.getItem(this.storageKey);
@@ -467,7 +429,7 @@
                     // localStorageから読み込めない場合はsessionStorageを試行
                     if (!saved) {
                         saved = sessionStorage.getItem(this.storageKey);
-                        this.log('sessionStorageからデータ復元');
+                        console.log('sessionStorageからデータ復元');
                     }
                     
                     if (saved) {
@@ -477,24 +439,23 @@
                         this.days = data.days || 30;
                         this.actualData = data.actualData || {};
                         
-                        this.log('データ読み込み成功', {
+                        console.log('データ読み込み成功:', {
                             version: data.version,
                             recordCount: Object.keys(this.actualData).length,
                             timestamp: data.timestamp
                         });
                         
-                        // DOM要素更新
+                        // フォーム値更新
                         this.updateFormValues();
                         
                         return true;
                     } else {
-                        this.log('保存データなし - デフォルト値使用');
+                        console.log('保存データなし - デフォルト値使用');
                         return false;
                     }
                     
                 } catch (error) {
-                    this.log('データ読み込みエラー', error);
-                    // エラー時はデフォルト値で継続
+                    console.error('データ読み込みエラー:', error);
                     return false;
                 }
             }
@@ -504,34 +465,23 @@
                 const daysInput = document.getElementById('days');
                 
                 if (initialInput) {
-                    initialInput.value = this.formatInputValue(this.initialAmount);
+                    initialInput.value = this.initialAmount;
                 }
                 if (daysInput) {
                     daysInput.value = this.days;
                 }
             }
             
-            // 数値フォーマット関数
+            // 数値フォーマット関数（表示用のみカンマ付き）
             formatNumber(num) {
                 return new Intl.NumberFormat('ja-JP').format(Math.round(num));
             }
             
             formatNumberMobile(num) {
-                const formatted = new Intl.NumberFormat('ja-JP').format(Math.round(num));
                 if (Math.abs(num) >= 10000) {
                     return `${(num / 10000).toFixed(1)}万`;
                 }
-                return formatted;
-            }
-            
-            formatInputValue(value) {
-                if (!value && value !== 0) return '';
-                return new Intl.NumberFormat('ja-JP').format(value);
-            }
-            
-            parseInputValue(value) {
-                if (!value) return '';
-                return value.replace(/,/g, '');
+                return this.formatNumber(num);
             }
             
             // 複利計算
@@ -691,12 +641,12 @@
                 const amountInput = document.getElementById('actualAmount');
                 
                 if (!dateInput || !amountInput) {
-                    this.log('入力要素が見つかりません');
+                    console.error('入力要素が見つかりません');
                     return false;
                 }
                 
                 const date = dateInput.value;
-                const amount = this.parseInputValue(amountInput.value);
+                const amount = amountInput.value;
                 
                 if (!date || !amount) {
                     alert('日付と残高を入力してください');
@@ -710,7 +660,7 @@
                 }
                 
                 this.actualData[date] = numAmount;
-                this.log('データ追加', { date, amount: numAmount });
+                console.log('データ追加:', { date, amount: numAmount });
                 
                 // フォームリセット
                 dateInput.value = this.todayString;
@@ -726,7 +676,7 @@
             removeActualData(date) {
                 if (this.actualData[date]) {
                     delete this.actualData[date];
-                    this.log('データ削除', { date });
+                    console.log('データ削除:', { date });
                     this.saveData();
                     this.updateDisplay();
                 }
@@ -844,13 +794,12 @@
                 const initialInput = document.getElementById('initialAmount');
                 if (initialInput) {
                     initialInput.addEventListener('input', (e) => {
-                        const cleanValue = this.parseInputValue(e.target.value);
-                        if (!isNaN(cleanValue) && cleanValue !== '') {
-                            this.initialAmount = Number(cleanValue);
-                            e.target.value = this.formatInputValue(this.initialAmount);
+                        const value = Number(e.target.value);
+                        if (!isNaN(value) && value > 0) {
+                            this.initialAmount = value;
                             this.saveData();
                             this.updateDisplay();
-                            this.log('初期金額更新', this.initialAmount);
+                            console.log('初期金額更新:', this.initialAmount);
                         }
                     });
                 }
@@ -859,111 +808,8 @@
                 const daysInput = document.getElementById('days');
                 if (daysInput) {
                     daysInput.addEventListener('input', (e) => {
-                        this.days = Number(e.target.value);
-                        this.saveData();
-                        this.updateDisplay();
-                        this.log('予測日数更新', this.days);
-                    });
-                }
-                
-                // 残高入力フォーマット
-                const amountInput = document.getElementById('actualAmount');
-                if (amountInput) {
-                    amountInput.addEventListener('input', (e) => {
-                        const cleanValue = this.parseInputValue(e.target.value);
-                        if (cleanValue !== '') {
-                            e.target.value = this.formatInputValue(cleanValue);
-                        }
-                    });
-                    
-                    // Enterキーで追加
-                    amountInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            this.addActualData();
-                        }
-                    });
-                }
-                
-                // 残高追加ボタン
-                const addButton = document.getElementById('addButton');
-                if (addButton) {
-                    addButton.addEventListener('click', () => {
-                        this.addActualData();
-                    });
-                }
-                
-                // サマリータブ切り替え
-                document.querySelectorAll('[data-view]').forEach(button => {
-                    button.addEventListener('click', () => {
-                        this.summaryView = button.getAttribute('data-view');
-                        
-                        // タブの見た目を更新
-                        document.querySelectorAll('[data-view]').forEach(btn => {
-                            btn.className = 'btn-tab btn-tab-inactive';
-                        });
-                        button.className = 'btn-tab btn-tab-active';
-                        
-                        this.updateSummaryDisplay();
-                        this.log('表示切り替え', this.summaryView);
-                    });
-                });
-                
-                // 削除ボタンのイベント（動的に追加されるため、委譲イベント）
-                document.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('btn-delete')) {
-                        const date = e.target.getAttribute('data-date');
-                        if (date && confirm(`${date}のデータを削除しますか？`)) {
-                            this.removeActualData(date);
-                        }
-                    }
-                });
-                
-                // ページ離脱時の保存
-                window.addEventListener('beforeunload', () => {
-                    this.saveData();
-                });
-                
-                // ページ可視性変更時の保存
-                document.addEventListener('visibilitychange', () => {
-                    if (document.hidden) {
-                        this.saveData();
-                    }
-                });
-                
-                this.log('イベントリスナー設定完了');
-            }
-        }
-        
-        // アプリケーション開始
-        let app;
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM読み込み完了 - アプリケーション開始');
-            app = new AppState();
-            
-            // グローバルアクセス用（デバッグ用）
-            window.app = app;
-        });
-        
-        // エラーハンドリング
-        window.addEventListener('error', function(e) {
-            console.error('アプリケーションエラー:', e.error);
-            if (app) {
-                app.log('エラー発生', {
-                    message: e.message,
-                    filename: e.filename,
-                    lineno: e.lineno
-                });
-            }
-        });
-        
-        // 未処理のPromise拒否をキャッチ
-        window.addEventListener('unhandledrejection', function(e) {
-            console.error('未処理のPromise拒否:', e.reason);
-            if (app) {
-                app.log('Promise拒否', e.reason);
-            }
-        });
-    </script>
-</body>
-</html>
+                        const value = Number(e.target.value);
+                        if (!isNaN(value) && value > 0) {
+                            this.days = value;
+                            this.saveData();
+                            this.updateDisplay();
