@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>複利計算管理ツール</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.1/chartjs-plugin-zoom.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -324,6 +325,108 @@
             width: 100%;
         }
         
+        .chart-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .chart-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background-color: #f3f4f6;
+            color: #374151;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .chart-btn:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .chart-btn:active {
+            background-color: #d1d5db;
+        }
+        
+        .zoom-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .zoom-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .zoom-btn:hover {
+            background-color: #1d4ed8;
+        }
+        
+        .zoom-btn:active {
+            background-color: #1e40af;
+            transform: scale(0.95);
+        }
+        
+        .chart-scrollbar-container {
+            margin-top: 10px;
+            padding: 0 16px;
+        }
+        
+        .chart-scrollbar {
+            width: 100%;
+            height: 6px;
+            background-color: #f3f4f6;
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .chart-scrollbar-thumb {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 3px;
+            position: absolute;
+            cursor: grab;
+            transition: background-color 0.2s;
+            min-width: 20px;
+        }
+        
+        .chart-scrollbar-thumb:hover {
+            background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+        }
+        
+        .chart-scrollbar-thumb:active {
+            cursor: grabbing;
+            background: linear-gradient(90deg, #1d4ed8 0%, #1e40af 100%);
+        }
+        
+        .chart-scrollbar-track {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 3px;
+        }
+        
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -470,8 +573,26 @@
         <!-- グラフ -->
         <div class="chart-container">
             <h2 class="card-title">予算・残高グラフ</h2>
+            <div class="chart-controls">
+                <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="zoomIn()" title="ズームイン">+</button>
+                    <button class="zoom-btn" onclick="zoomOut()" title="ズームアウト">−</button>
+                </div>
+                <button class="chart-btn" onclick="resetChartView()">全期間表示</button>
+                <button class="chart-btn" onclick="showRecentDays(30)">最新30日</button>
+                <button class="chart-btn" onclick="showRecentDays(7)">最新7日</button>
+            </div>
+            <div style="font-size: 11px; color: #6b7280; text-align: center; margin-bottom: 8px;">
+                📱 ピンチでズーム、左右・上下スワイプでパン操作
+            </div>
             <div class="chart-wrapper">
                 <canvas id="chart"></canvas>
+            </div>
+            <div class="chart-scrollbar-container">
+                <div class="chart-scrollbar" id="chartScrollbar">
+                    <div class="chart-scrollbar-track"></div>
+                    <div class="chart-scrollbar-thumb" id="chartScrollbarThumb"></div>
+                </div>
             </div>
         </div>
 
@@ -487,13 +608,17 @@
     </div>
 
     <script>
+        // Chart.jsにzoomプラグインを登録
+        Chart.register(ChartZoom);
+        
         // グローバル変数
         let initialAmount = 100000;
         let days = 30;
         let actualData = {};
         let summaryView = 'day';
         let chart = null;
-        const storageKey = 'compoundCalculatorData_v5';
+        let chartScrollbar = null;
+        const storageKey = 'compoundCalculatorData_v14';
         
         // 今日の日付
         const today = new Date();
@@ -544,7 +669,7 @@
                     days: days,
                     actualData: actualData,
                     timestamp: new Date().toISOString(),
-                    version: '5.0'
+                    version: '14.0'
                 };
                 
                 localStorage.setItem(storageKey, JSON.stringify(data));
@@ -946,7 +1071,166 @@
             `;
         }
         
-        // グラフ更新
+        // チャートスクロールバーのクラス
+        class ChartScrollbar {
+            constructor(chartInstance) {
+                this.chart = chartInstance;
+                this.scrollbar = document.getElementById('chartScrollbar');
+                this.thumb = document.getElementById('chartScrollbarThumb');
+                this.isDragging = false;
+                this.dragStartX = 0;
+                this.dragStartThumbLeft = 0;
+                this.visibleRange = { min: 0, max: 1 };
+                
+                if (this.scrollbar && this.thumb) {
+                    this.setupEventListeners();
+                    this.updateScrollbar();
+                }
+            }
+            
+            setupEventListeners() {
+                // スクロールバートラック クリック
+                this.scrollbar.addEventListener('click', (e) => {
+                    if (e.target === this.thumb) return;
+                    
+                    const rect = this.scrollbar.getBoundingClientRect();
+                    const clickPosition = (e.clientX - rect.left) / rect.width;
+                    const thumbWidth = parseFloat(this.thumb.style.width) / 100;
+                    
+                    let newPosition = clickPosition - thumbWidth / 2;
+                    newPosition = Math.max(0, Math.min(1 - thumbWidth, newPosition));
+                    
+                    this.moveThumbToPosition(newPosition);
+                });
+                
+                // サムドラッグ開始
+                this.thumb.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    this.startDrag(e.clientX);
+                });
+                
+                this.thumb.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.startDrag(e.touches[0].clientX);
+                }, { passive: false });
+                
+                // ドラッグ中
+                document.addEventListener('mousemove', (e) => {
+                    if (this.isDragging) {
+                        e.preventDefault();
+                        this.handleDrag(e.clientX);
+                    }
+                });
+                
+                document.addEventListener('touchmove', (e) => {
+                    if (this.isDragging) {
+                        e.preventDefault();
+                        this.handleDrag(e.touches[0].clientX);
+                    }
+                }, { passive: false });
+                
+                // ドラッグ終了
+                document.addEventListener('mouseup', () => {
+                    this.endDrag();
+                });
+                
+                document.addEventListener('touchend', () => {
+                    this.endDrag();
+                });
+                
+                // チャートのズーム/パン変更を監視
+                if (this.chart) {
+                    this.chart.options.onZoomComplete = () => {
+                        this.updateScrollbar();
+                    };
+                    this.chart.options.onPanComplete = () => {
+                        this.updateScrollbar();
+                    };
+                }
+            }
+            
+            startDrag(clientX) {
+                this.isDragging = true;
+                this.dragStartX = clientX;
+                const rect = this.scrollbar.getBoundingClientRect();
+                const thumbRect = this.thumb.getBoundingClientRect();
+                this.dragStartThumbLeft = (thumbRect.left - rect.left) / rect.width;
+                this.thumb.style.cursor = 'grabbing';
+            }
+            
+            handleDrag(clientX) {
+                const rect = this.scrollbar.getBoundingClientRect();
+                const deltaX = clientX - this.dragStartX;
+                const deltaRatio = deltaX / rect.width;
+                
+                let newPosition = this.dragStartThumbLeft + deltaRatio;
+                const thumbWidth = parseFloat(this.thumb.style.width) / 100;
+                newPosition = Math.max(0, Math.min(1 - thumbWidth, newPosition));
+                
+                this.moveThumbToPosition(newPosition);
+            }
+            
+            endDrag() {
+                this.isDragging = false;
+                this.thumb.style.cursor = 'grab';
+            }
+            
+            moveThumbToPosition(position) {
+                const thumbWidth = parseFloat(this.thumb.style.width) / 100;
+                this.thumb.style.left = (position * 100) + '%';
+                
+                // チャートの表示範囲を更新
+                const totalDataPoints = this.chart.data.labels.length;
+                const visibleDataPoints = Math.max(1, Math.floor(totalDataPoints * thumbWidth));
+                const startIndex = Math.floor(position * (totalDataPoints - visibleDataPoints));
+                const endIndex = startIndex + visibleDataPoints - 1;
+                
+                this.chart.zoomScale('x', {
+                    min: startIndex,
+                    max: Math.min(endIndex, totalDataPoints - 1)
+                });
+                
+                this.visibleRange = {
+                    min: position,
+                    max: position + thumbWidth
+                };
+            }
+            
+            updateScrollbar() {
+                if (!this.chart || !this.chart.data.labels) return;
+                
+                const totalDataPoints = this.chart.data.labels.length;
+                if (totalDataPoints === 0) return;
+                
+                // チャートの現在の表示範囲を取得
+                const xScale = this.chart.scales.x;
+                const currentMin = Math.max(0, Math.floor(xScale.min || 0));
+                const currentMax = Math.min(totalDataPoints - 1, Math.ceil(xScale.max || totalDataPoints - 1));
+                
+                // スクロールバーのサムのサイズと位置を計算
+                const visibleDataPoints = currentMax - currentMin + 1;
+                const thumbWidth = Math.max(0.05, Math.min(1, visibleDataPoints / totalDataPoints)); // 最小5%
+                const thumbPosition = currentMin / (totalDataPoints - visibleDataPoints || 1);
+                
+                // サムのスタイルを更新
+                this.thumb.style.width = (thumbWidth * 100) + '%';
+                this.thumb.style.left = (thumbPosition * (1 - thumbWidth) * 100) + '%';
+                
+                this.visibleRange = {
+                    min: thumbPosition * (1 - thumbWidth),
+                    max: thumbPosition * (1 - thumbWidth) + thumbWidth
+                };
+            }
+            
+            destroy() {
+                // イベントリスナーの削除は自動で行われる
+                this.chart = null;
+                this.scrollbar = null;
+                this.thumb = null;
+            }
+        }
+        
+        // グラフ更新（横スクロール対応）
         function updateChart() {
             const ctx = document.getElementById('chart');
             if (!ctx) return;
@@ -956,20 +1240,47 @@
                 chart.destroy();
             }
             
-            // グラフデータ生成
-            const budgetData = [];
+            if (chartScrollbar) {
+                chartScrollbar.destroy();
+                chartScrollbar = null;
+            }
+            
+            // データ準備
+            const actualDates = Object.keys(actualData).sort();
             const labels = [];
             const budgetAmounts = [];
             const actualAmounts = [];
             
-            for (let i = 0; i <= Math.min(days, 60); i++) { // 最大60日で制限
-                const date = new Date();
-                date.setDate(date.getDate() + i);
-                const budgetAmount = calculateCompoundInterest(initialAmount, 0.01, i);
-                const dateStr = date.toISOString().split('T')[0];
+            // 表示期間の決定
+            let startDate, totalDays;
+            
+            if (actualDates.length === 0) {
+                // データなしの場合：今日から予測期間
+                startDate = new Date(today);
+                totalDays = days;
+            } else {
+                // データありの場合：最初のデータ日から予測期間まで
+                startDate = new Date(actualDates[0]);
+                const daysSinceFirstData = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
+                totalDays = Math.max(daysSinceFirstData + days, 90); // 最低90日表示
+            }
+            
+            // グラフデータ生成
+            for (let i = 0; i <= totalDays; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                const dateStr = currentDate.toISOString().split('T')[0];
                 
-                labels.push(`${i}日`);
+                // ラベル（月/日形式）
+                const month = currentDate.getMonth() + 1;
+                const day = currentDate.getDate();
+                labels.push(`${month}/${day}`);
+                
+                // 予算計算
+                const budgetAmount = calculateCompoundInterest(initialAmount, 0.01, i);
                 budgetAmounts.push(Math.round(budgetAmount));
+                
+                // 実際の残高
                 actualAmounts.push(actualData[dateStr] || null);
             }
             
@@ -997,12 +1308,12 @@
                             backgroundColor: 'rgba(22, 163, 74, 0.1)',
                             borderWidth: 3,
                             fill: false,
-                            pointRadius: 4,
-                            pointHoverRadius: 6,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
                             pointBackgroundColor: '#16a34a',
                             pointBorderColor: '#ffffff',
                             pointBorderWidth: 2,
-                            spanGaps: false,
+                            spanGaps: true,
                             tension: 0.1
                         }
                     ]
@@ -1018,9 +1329,7 @@
                         legend: {
                             position: 'top',
                             labels: {
-                                font: {
-                                    size: 12
-                                },
+                                font: { size: 12 },
                                 padding: 15,
                                 usePointStyle: true
                             }
@@ -1038,50 +1347,124 @@
                                     return `${context.dataset.label}: ¥${formatNumberMobile(value)}`;
                                 }
                             }
+                        },
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'xy',
+                                threshold: 10
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.1
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'xy',
+                                limits: {
+                                    x: { min: 0, max: labels.length - 1 },
+                                    y: { min: 'original', max: 'original' }
+                                },
+                                onZoomComplete: function() {
+                                    if (chartScrollbar) {
+                                        setTimeout(() => chartScrollbar.updateScrollbar(), 50);
+                                    }
+                                }
+                            }
                         }
                     },
                     scales: {
                         x: {
                             title: {
                                 display: true,
-                                text: '経過日数',
-                                font: {
-                                    size: 11
+                                text: '日付',
+                                font: { size: 11 }
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                            ticks: {
+                                font: { size: 9 },
+                                maxTicksLimit: 12,
+                                callback: function(value, index) {
+                                    // 週に1回表示
+                                    return index % 7 === 0 ? this.getLabelForValue(value) : '';
                                 }
                             },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            },
-                            ticks: {
-                                font: {
-                                    size: 10
-                                },
-                                maxTicksLimit: 8
-                            }
+                            // 初期表示範囲（最新30日）
+                            min: Math.max(0, labels.length - 30),
+                            max: labels.length - 1
                         },
                         y: {
                             title: {
                                 display: true,
                                 text: '金額（円）',
-                                font: {
-                                    size: 11
-                                }
+                                font: { size: 11 }
                             },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
                             ticks: {
-                                font: {
-                                    size: 10
-                                },
+                                font: { size: 10 },
                                 callback: function(value) {
                                     return '¥' + formatNumberMobile(value);
                                 }
                             }
                         }
+                    },
+                    onResize: function() {
+                        if (chartScrollbar) {
+                            setTimeout(() => chartScrollbar.updateScrollbar(), 100);
+                        }
                     }
                 }
             });
+            
+            // スクロールバーを初期化
+            chartScrollbar = new ChartScrollbar(chart);
+        }
+        
+        // グラフ操作関数
+        function resetChartView() {
+            if (chart) {
+                chart.resetZoom();
+                if (chartScrollbar) {
+                    chartScrollbar.updateScrollbar();
+                }
+            }
+        }
+        
+        function showRecentDays(dayCount) {
+            if (chart && chart.data.labels.length > 0) {
+                const totalDays = chart.data.labels.length;
+                const startIndex = Math.max(0, totalDays - dayCount);
+                
+                chart.zoomScale('x', {
+                    min: startIndex,
+                    max: totalDays - 1
+                });
+                
+                if (chartScrollbar) {
+                    chartScrollbar.updateScrollbar();
+                }
+            }
+        }
+        
+        // ズーム操作関数
+        function zoomIn() {
+            if (chart) {
+                chart.zoom(1.5);
+                if (chartScrollbar) {
+                    setTimeout(() => chartScrollbar.updateScrollbar(), 100);
+                }
+            }
+        }
+        
+        function zoomOut() {
+            if (chart) {
+                chart.zoom(0.67);
+                if (chartScrollbar) {
+                    setTimeout(() => chartScrollbar.updateScrollbar(), 100);
+                }
+            }
         }
         
         // イベントリスナー設定
