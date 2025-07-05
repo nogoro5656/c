@@ -369,12 +369,9 @@
             border: none;
         }
         
-        .scrollbar-info {
-            font-size: 11px;
-            color: #6c757d;
-            white-space: nowrap;
-            min-width: 60px;
-            text-align: right;
+        .data-list {
+            max-height: 200px;
+            overflow-y: auto;
         }
         
         .data-item {
@@ -464,15 +461,6 @@
                         <div class="empty-state">
                             <div style="font-size: 14px;">損益データがありません</div>
                             <div style="font-size: 12px; margin-top: 4px;">損益を記録すると統計情報が表示されます</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2 class="card-title">記録データ</h2>
-                    <div id="dataList" class="data-list">
-                        <div style="text-align: center; color: #6b7280; padding: 20px;">
-                            損益データがありません
                         </div>
                     </div>
                 </div>
@@ -611,6 +599,39 @@
             }
         };
         
+        // データの保存と読み込み
+        function saveData() {
+            try {
+                var data = {
+                    initialAmount: appData.initialAmount,
+                    days: appData.days,
+                    actualData: appData.actualData
+                };
+                sessionStorage.setItem('compoundCalculatorData', JSON.stringify(data));
+                return true;
+            } catch (error) {
+                console.error('データ保存エラー:', error);
+                return false;
+            }
+        }
+        
+        function loadData() {
+            try {
+                var saved = sessionStorage.getItem('compoundCalculatorData');
+                if (saved) {
+                    var data = JSON.parse(saved);
+                    appData.initialAmount = data.initialAmount || 100000;
+                    appData.days = data.days || 30;
+                    appData.actualData = data.actualData || {};
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('データ読み込みエラー:', error);
+                return false;
+            }
+        }
+        
         function formatNumber(num) {
             return new Intl.NumberFormat('ja-JP').format(Math.round(num));
         }
@@ -680,7 +701,7 @@
             appData.actualData[date] = profit;
             amountInput.value = '';
             
-            updateDataList();
+            saveData();
             updateSummaryDisplay();
             updateOverallSummary();
             updateChart();
@@ -691,7 +712,7 @@
         
         function removeData(date) {
             delete appData.actualData[date];
-            updateDataList();
+            saveData();
             updateSummaryDisplay();
             updateOverallSummary();
             updateChart();
@@ -820,33 +841,8 @@
         }
         
         function updateDataList() {
-            var container = document.getElementById('dataList');
-            if (!container) return;
-            
-            var dates = Object.keys(appData.actualData).sort().reverse();
-            
-            if (dates.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 20px;">損益データがありません</div>';
-                return;
-            }
-            
-            var html = '';
-            for (var i = 0; i < dates.length; i++) {
-                var date = dates[i];
-                var profit = appData.actualData[date];
-                var sign = profit >= 0 ? '+' : '';
-                var color = profit >= 0 ? '#16a34a' : '#dc2626';
-                
-                html += '<div class="data-item">' +
-                    '<div>' +
-                        '<strong>' + date + '</strong><br>' +
-                        '<span style="color: ' + color + ';">' + sign + '¥' + formatNumber(profit) + '</span>' +
-                    '</div>' +
-                    '<button class="btn-small" onclick="removeData(\'' + date + '\')">削除</button>' +
-                '</div>';
-            }
-            
-            container.innerHTML = html;
+            // 記録データセクションは削除されたため、この関数は不要
+            return;
         }
         
         function updateChart() {
@@ -1135,6 +1131,9 @@
                 dateInput.value = todayString;
             }
             
+            // 保存されたデータを読み込み
+            loadData();
+            
             document.getElementById('initialAmount').value = appData.initialAmount;
             document.getElementById('days').value = appData.days;
             
@@ -1144,12 +1143,14 @@
             
             document.getElementById('initialAmount').addEventListener('change', function() {
                 appData.initialAmount = parseFloat(this.value) || 100000;
+                saveData();
                 updateOverallSummary();
                 updateChart();
             });
             
             document.getElementById('days').addEventListener('change', function() {
                 appData.days = parseInt(this.value) || 30;
+                saveData();
                 updateChart();
             });
             
@@ -1190,7 +1191,6 @@
                 })(tabButtons[i]);
             }
             
-            updateDataList();
             updateSummaryDisplay();
             updateOverallSummary();
             updateChart();
