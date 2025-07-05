@@ -25,35 +25,14 @@
         .container {
             max-width: 480px;
             margin: 0 auto;
-            position: relative;
-        }
-        
-        .header-link {
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 11px;
-            color: #6b7280;
-            text-decoration: none;
-            background-color: #f3f4f6;
-            padding: 6px 10px;
-            border-radius: 6px;
-            transition: all 0.2s;
-            z-index: 10;
-        }
-        
-        .header-link:hover {
-            color: #2563eb;
-            background-color: #e5e7eb;
         }
         
         .title {
             font-size: 22px;
             font-weight: bold;
             text-align: center;
-            margin: 40px 0 20px 0;
+            margin: 20px 0;
             color: #1f2937;
-            padding: 0 10px;
         }
         
         .card {
@@ -104,7 +83,6 @@
             border: 2px solid #d1d5db;
             border-radius: 8px;
             outline: none;
-            -webkit-appearance: none;
             background-color: white;
         }
         
@@ -122,24 +100,12 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            -webkit-appearance: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        .btn-primary {
             background-color: #2563eb;
             color: white;
         }
         
-        .btn-primary:hover, .btn-primary:active {
+        .btn:hover {
             background-color: #1d4ed8;
-            transform: translateY(-1px);
-        }
-        
-        .btn-primary:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
-            transform: none;
         }
         
         .btn-tab {
@@ -150,14 +116,12 @@
             border: none;
             cursor: pointer;
             transition: all 0.2s;
-            -webkit-tap-highlight-color: transparent;
             min-height: 36px;
         }
         
         .btn-tab-active {
             background-color: #2563eb;
             color: white;
-            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
         }
         
         .btn-tab-inactive {
@@ -165,7 +129,7 @@
             color: #374151;
         }
         
-        .btn-tab-inactive:hover, .btn-tab-inactive:active {
+        .btn-tab-inactive:hover {
             background-color: #e5e7eb;
         }
         
@@ -187,19 +151,19 @@
         }
         
         .summary-green { 
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            background: #f0fdf4;
             border: 1px solid #bbf7d0;
         }
         .summary-purple { 
-            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+            background: #faf5ff;
             border: 1px solid #ddd6fe;
         }
         .summary-blue { 
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            background: #eff6ff;
             border: 1px solid #bfdbfe;
         }
         .summary-yellow { 
-            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+            background: #fefce8;
             border: 1px solid #fde68a;
         }
         
@@ -232,7 +196,6 @@
         .summary-list {
             max-height: 240px;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
         }
         
         .summary-list-item {
@@ -252,44 +215,6 @@
             color: #6b7280;
         }
         
-        .warning-card {
-            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-            border: 1px solid #fecaca;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-        
-        .warning-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #b91c1c;
-            margin-bottom: 8px;
-        }
-        
-        .warning-text {
-            font-size: 12px;
-            color: #b91c1c;
-            line-height: 1.5;
-        }
-        
-        .btn-delete {
-            font-size: 10px;
-            color: #dc2626;
-            background-color: #fee2e2;
-            padding: 4px 8px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            margin-top: 4px;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        .btn-delete:hover, .btn-delete:active {
-            color: #b91c1c;
-            background-color: #fecaca;
-        }
-        
         .message {
             padding: 12px 16px;
             border-radius: 8px;
@@ -297,7 +222,6 @@
             font-size: 14px;
             text-align: center;
             display: none;
-            animation: slideIn 0.3s ease-out;
         }
         
         .success-message {
@@ -348,10 +272,6 @@
             background-color: #e5e7eb;
         }
         
-        .chart-btn:active {
-            background-color: #d1d5db;
-        }
-        
         .zoom-controls {
             display: flex;
             gap: 8px;
@@ -379,139 +299,43 @@
             background-color: #1d4ed8;
         }
         
-        .zoom-btn:active {
-            background-color: #1e40af;
-            transform: scale(0.95);
+        .data-list {
+            max-height: 200px;
+            overflow-y: auto;
         }
         
-        .chart-scrollbar-container {
-            margin-top: 10px;
-            padding: 0 16px;
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background-color: #f9fafb;
+            border-radius: 6px;
+            margin-bottom: 4px;
         }
         
-        .chart-scrollbar {
-            width: 100%;
-            height: 6px;
-            background-color: #f3f4f6;
-            border-radius: 3px;
-            position: relative;
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            border: 1px solid #e5e7eb;
         }
         
-        .chart-scrollbar-thumb {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
-            border-radius: 3px;
-            position: absolute;
-            cursor: grab;
-            transition: background-color 0.2s;
-            min-width: 20px;
-        }
-        
-        .chart-scrollbar-thumb:hover {
-            background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
-        }
-        
-        .chart-scrollbar-thumb:active {
-            cursor: grabbing;
-            background: linear-gradient(90deg, #1d4ed8 0%, #1e40af 100%);
-        }
-        
-        .chart-scrollbar-track {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 3px;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* モバイル専用スタイル */
-        @media (max-width: 480px) {
-            body {
-                padding: 8px;
-            }
-            
-            .title {
-                font-size: 20px;
-                margin: 32px 0 16px 0;
-            }
-            
-            .card {
-                padding: 14px;
-                margin-bottom: 14px;
-            }
-            
-            .summary-item {
-                padding: 10px 6px;
-                min-height: 65px;
-            }
-            
-            .summary-value {
-                font-size: 14px;
-            }
-            
-            .summary-value-sm {
-                font-size: 12px;
-            }
-            
-            .summary-label {
-                font-size: 9px;
-            }
-            
-            .btn-tab {
-                font-size: 10px;
-                padding: 6px 4px;
-            }
-            
-            .chart-wrapper {
-                height: 250px;
-            }
-        }
-        
-        /* 超小画面対応 */
-        @media (max-width: 360px) {
-            .summary-grid {
-                gap: 8px;
-            }
-            
-            .summary-item {
-                padding: 8px 4px;
-                min-height: 60px;
-            }
-            
-            .summary-value {
-                font-size: 13px;
-            }
-            
-            .summary-value-sm {
-                font-size: 11px;
-            }
+        .btn-small:hover {
+            background-color: #dc2626;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="https://claude.ai" target="_blank" rel="noopener" class="header-link">Claude.ai</a>
         <h1 class="title">複利計算管理ツール</h1>
         
-        <!-- メッセージ表示エリア -->
         <div id="successMessage" class="message success-message"></div>
         <div id="errorMessage" class="message error-message"></div>
         
-        <!-- 基本設定 -->
         <div class="card">
             <h2 class="card-title">基本設定</h2>
             <div class="grid-2">
@@ -526,23 +350,21 @@
             </div>
         </div>
 
-        <!-- 残高記録 -->
         <div class="card">
-            <h2 class="card-title blue-title">残高記録</h2>
+            <h2 class="card-title blue-title">損益記録</h2>
             <div class="grid-2" style="margin-bottom: 12px;">
                 <div>
                     <label class="label">日付</label>
                     <input type="date" id="selectedDate" class="input">
                 </div>
                 <div>
-                    <label class="label">残高（円）</label>
-                    <input type="number" id="actualAmount" class="input" placeholder="残高を入力" min="0" step="1000">
+                    <label class="label">損益（円）</label>
+                    <input type="number" id="actualAmount" class="input" placeholder="±損益を入力" step="1000">
                 </div>
             </div>
-            <button id="addButton" class="btn btn-primary">残高を記録</button>
+            <button id="addButton" class="btn">損益を記録</button>
         </div>
 
-        <!-- 収支サマリー -->
         <div class="card">
             <h2 class="card-title">収支サマリー</h2>
             <div class="grid-4" id="summaryTabs">
@@ -553,34 +375,41 @@
             </div>
             <div id="summaryData" class="summary-list">
                 <div class="empty-state">
-                    <div style="font-size: 14px;">残高データがありません</div>
-                    <div style="font-size: 12px; margin-top: 4px;">残高を記録すると収支サマリーが表示されます</div>
+                    <div style="font-size: 14px;">損益データがありません</div>
+                    <div style="font-size: 12px; margin-top: 4px;">損益を記録すると収支サマリーが表示されます</div>
                 </div>
             </div>
         </div>
 
-        <!-- 全体サマリー -->
         <div class="card">
             <h2 class="card-title">全体サマリー</h2>
             <div id="overallSummary">
                 <div class="empty-state">
-                    <div style="font-size: 14px;">残高データがありません</div>
-                    <div style="font-size: 12px; margin-top: 4px;">残高を記録すると統計情報が表示されます</div>
+                    <div style="font-size: 14px;">損益データがありません</div>
+                    <div style="font-size: 12px; margin-top: 4px;">損益を記録すると統計情報が表示されます</div>
                 </div>
             </div>
         </div>
 
-        <!-- グラフ -->
+        <div class="card">
+            <h2 class="card-title">記録データ</h2>
+            <div id="dataList" class="data-list">
+                <div style="text-align: center; color: #6b7280; padding: 20px;">
+                    損益データがありません
+                </div>
+            </div>
+        </div>
+
         <div class="chart-container">
-            <h2 class="card-title">予算・残高グラフ</h2>
+            <h2 class="card-title">グラフ</h2>
             <div class="chart-controls">
                 <div class="zoom-controls">
-                    <button class="zoom-btn" onclick="zoomIn()" title="ズームイン">+</button>
-                    <button class="zoom-btn" onclick="zoomOut()" title="ズームアウト">−</button>
+                    <button class="zoom-btn" id="zoomInBtn" title="ズームイン">+</button>
+                    <button class="zoom-btn" id="zoomOutBtn" title="ズームアウト">−</button>
                 </div>
-                <button class="chart-btn" onclick="resetChartView()">全期間表示</button>
-                <button class="chart-btn" onclick="showRecentDays(30)">最新30日</button>
-                <button class="chart-btn" onclick="showRecentDays(7)">最新7日</button>
+                <button class="chart-btn" id="resetViewBtn">全期間表示</button>
+                <button class="chart-btn" id="recent30Btn">最新30日</button>
+                <button class="chart-btn" id="recent7Btn">最新7日</button>
             </div>
             <div style="font-size: 11px; color: #6b7280; text-align: center; margin-bottom: 8px;">
                 📱 ピンチでズーム、左右・上下スワイプでパン操作
@@ -588,133 +417,77 @@
             <div class="chart-wrapper">
                 <canvas id="chart"></canvas>
             </div>
-            <div class="chart-scrollbar-container">
-                <div class="chart-scrollbar" id="chartScrollbar">
-                    <div class="chart-scrollbar-track"></div>
-                    <div class="chart-scrollbar-thumb" id="chartScrollbarThumb"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 注意事項 -->
-        <div class="warning-card">
-            <h3 class="warning-title">⚠️ 投資リスクについて</h3>
-            <div class="warning-text">
-                • 日1%の高利回りは現実的には困難で高リスクです<br>
-                • 投資判断は自己責任で専門家にご相談ください<br>
-                • このツールは教育・分析目的でご利用ください
-            </div>
         </div>
     </div>
 
     <script>
-        // Chart.jsにzoomプラグインを登録
-        Chart.register(ChartZoom);
+        var initialAmount = 100000;
+        var days = 30;
+        var actualData = {};
+        var chart = null;
+        var summaryView = 'day';
+        var today = new Date();
+        var todayString = today.toISOString().split('T')[0];
         
-        // グローバル変数
-        let initialAmount = 100000;
-        let days = 30;
-        let actualData = {};
-        let summaryView = 'day';
-        let chart = null;
-        let chartScrollbar = null;
-        const storageKey = 'compoundCalculatorData_v14';
-        
-        // 今日の日付
-        const today = new Date();
-        const todayString = today.toISOString().split('T')[0];
-        
-        // 数値フォーマット関数
         function formatNumber(num) {
             return new Intl.NumberFormat('ja-JP').format(Math.round(num));
         }
         
         function formatNumberMobile(num) {
-            const absNum = Math.abs(num);
+            var absNum = Math.abs(num);
             if (absNum >= 100000000) {
-                return `${(num / 100000000).toFixed(1)}億`;
+                return (num / 100000000).toFixed(1) + '億';
             } else if (absNum >= 10000) {
-                return `${(num / 10000).toFixed(1)}万`;
+                return (num / 10000).toFixed(1) + '万';
             } else if (absNum >= 1000) {
-                return `${(num / 1000).toFixed(0)}k`;
+                return (num / 1000).toFixed(0) + 'k';
             }
             return formatNumber(num);
         }
         
-        // メッセージ表示
-        function showMessage(text, isError = false) {
-            const successEl = document.getElementById('successMessage');
-            const errorEl = document.getElementById('errorMessage');
+        function showMessage(text, isError) {
+            var successEl = document.getElementById('successMessage');
+            var errorEl = document.getElementById('errorMessage');
             
-            // 既存のメッセージを非表示
             successEl.style.display = 'none';
             errorEl.style.display = 'none';
             
             if (isError) {
                 errorEl.textContent = text;
                 errorEl.style.display = 'block';
-                setTimeout(() => errorEl.style.display = 'none', 4000);
+                setTimeout(function() { errorEl.style.display = 'none'; }, 4000);
             } else {
                 successEl.textContent = text;
                 successEl.style.display = 'block';
-                setTimeout(() => successEl.style.display = 'none', 3000);
+                setTimeout(function() { successEl.style.display = 'none'; }, 3000);
             }
         }
         
-        // データ保存
         function saveData() {
             try {
-                const data = {
+                var data = {
                     initialAmount: initialAmount,
                     days: days,
-                    actualData: actualData,
-                    timestamp: new Date().toISOString(),
-                    version: '14.0'
+                    actualData: actualData
                 };
-                
-                localStorage.setItem(storageKey, JSON.stringify(data));
-                sessionStorage.setItem(storageKey, JSON.stringify(data));
-                
-                console.log('データ保存成功:', {
-                    recordCount: Object.keys(actualData).length,
-                    initialAmount: initialAmount,
-                    days: days
-                });
-                
+                localStorage.setItem('compoundCalculatorData', JSON.stringify(data));
                 return true;
             } catch (error) {
                 console.error('データ保存エラー:', error);
-                showMessage('データの保存に失敗しました', true);
                 return false;
             }
         }
         
-        // データ読み込み
         function loadData() {
             try {
-                let saved = localStorage.getItem(storageKey);
-                
-                if (!saved) {
-                    saved = sessionStorage.getItem(storageKey);
-                }
-                
+                var saved = localStorage.getItem('compoundCalculatorData');
                 if (saved) {
-                    const data = JSON.parse(saved);
-                    
+                    var data = JSON.parse(saved);
                     initialAmount = data.initialAmount || 100000;
                     days = data.days || 30;
                     actualData = data.actualData || {};
-                    
-                    console.log('データ読み込み成功:', {
-                        version: data.version,
-                        recordCount: Object.keys(actualData).length
-                    });
-                    
-                    updateFormValues();
                     return true;
                 }
-                
-                console.log('保存データなし');
                 return false;
             } catch (error) {
                 console.error('データ読み込みエラー:', error);
@@ -722,902 +495,451 @@
             }
         }
         
-        // フォーム値更新
-        function updateFormValues() {
-            const initialInput = document.getElementById('initialAmount');
-            const daysInput = document.getElementById('days');
-            
-            if (initialInput) initialInput.value = initialAmount;
-            if (daysInput) daysInput.value = days;
-        }
-        
-        // 複利計算
         function calculateCompoundInterest(principal, rate, time) {
             return principal * Math.pow(1 + rate, time);
         }
         
-        // 収支サマリー計算
-        function calculateSummary() {
-            const entries = Object.entries(actualData).map(([date, amount]) => ({
-                date: new Date(date),
-                dateStr: date,
-                amount,
-                profit: amount - initialAmount
-            })).sort((a, b) => a.date - b.date);
-
-            // 日別サマリー（前日比較）
-            const dailySummary = entries.map((entry, index) => {
-                let dayProfit = 0;
-                if (index === 0) {
-                    dayProfit = entry.amount - initialAmount;
-                } else {
-                    dayProfit = entry.amount - entries[index - 1].amount;
-                }
-                
-                return {
-                    period: entry.dateStr,
-                    profit: dayProfit,
-                    amount: entry.amount
-                };
-            });
-
-            // 週別サマリー
-            const weeklyData = {};
-            entries.forEach(entry => {
-                const date = new Date(entry.date);
-                const monday = new Date(date);
-                monday.setDate(date.getDate() - date.getDay() + 1);
-                const weekKey = monday.toISOString().split('T')[0];
-                
-                if (!weeklyData[weekKey]) {
-                    weeklyData[weekKey] = { entries: [], count: 0 };
-                }
-                
-                weeklyData[weekKey].entries.push(entry);
-                weeklyData[weekKey].count += 1;
-            });
-            
-            const weeklySummary = Object.entries(weeklyData).map(([week, data]) => {
-                const sortedEntries = data.entries.sort((a, b) => a.date - b.date);
-                const firstEntry = sortedEntries[0];
-                const lastEntry = sortedEntries[sortedEntries.length - 1];
-                
-                const firstEntryIndex = entries.findIndex(e => e.dateStr === firstEntry.dateStr);
-                const startAmount = firstEntryIndex > 0 ? entries[firstEntryIndex - 1].amount : initialAmount;
-                const endAmount = lastEntry.amount;
-                const weekProfit = endAmount - startAmount;
-                
-                return {
-                    period: `${week}の週`,
-                    profit: weekProfit,
-                    amount: endAmount,
-                    count: data.count
-                };
-            });
-
-            // 月別サマリー
-            const monthlyData = {};
-            entries.forEach(entry => {
-                const date = new Date(entry.date);
-                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                
-                if (!monthlyData[monthKey]) {
-                    monthlyData[monthKey] = { entries: [], count: 0 };
-                }
-                
-                monthlyData[monthKey].entries.push(entry);
-                monthlyData[monthKey].count += 1;
-            });
-            
-            const monthlySummary = Object.entries(monthlyData).map(([month, data]) => {
-                const sortedEntries = data.entries.sort((a, b) => a.date - b.date);
-                const firstEntry = sortedEntries[0];
-                const lastEntry = sortedEntries[sortedEntries.length - 1];
-                
-                const firstEntryIndex = entries.findIndex(e => e.dateStr === firstEntry.dateStr);
-                const startAmount = firstEntryIndex > 0 ? entries[firstEntryIndex - 1].amount : initialAmount;
-                const endAmount = lastEntry.amount;
-                const monthProfit = endAmount - startAmount;
-                
-                return {
-                    period: `${month.split('-')[0]}年${month.split('-')[1]}月`,
-                    profit: monthProfit,
-                    amount: endAmount,
-                    count: data.count
-                };
-            });
-
-            // 年別サマリー
-            const yearlyData = {};
-            entries.forEach(entry => {
-                const date = new Date(entry.date);
-                const yearKey = date.getFullYear().toString();
-                
-                if (!yearlyData[yearKey]) {
-                    yearlyData[yearKey] = { entries: [], count: 0 };
-                }
-                
-                yearlyData[yearKey].entries.push(entry);
-                yearlyData[yearKey].count += 1;
-            });
-            
-            const yearlySummary = Object.entries(yearlyData).map(([year, data]) => {
-                const sortedEntries = data.entries.sort((a, b) => a.date - b.date);
-                const firstEntry = sortedEntries[0];
-                const lastEntry = sortedEntries[sortedEntries.length - 1];
-                
-                const firstEntryIndex = entries.findIndex(e => e.dateStr === firstEntry.dateStr);
-                const startAmount = firstEntryIndex > 0 ? entries[firstEntryIndex - 1].amount : initialAmount;
-                const endAmount = lastEntry.amount;
-                const yearProfit = endAmount - startAmount;
-                
-                return {
-                    period: `${year}年`,
-                    profit: yearProfit,
-                    amount: endAmount,
-                    count: data.count
-                };
-            });
-
-            return { dailySummary, weeklySummary, monthlySummary, yearlySummary };
-        }
-        
-        // サマリーデータ取得
-        function getSummaryData() {
-            const summary = calculateSummary();
-            let data;
-            
-            switch (summaryView) {
-                case 'day': data = summary.dailySummary; break;
-                case 'week': data = summary.weeklySummary; break;
-                case 'month': data = summary.monthlySummary; break;
-                case 'year': data = summary.yearlySummary; break;
-                default: data = summary.dailySummary;
-            }
-            
-            return data.sort((a, b) => {
-                if (summaryView === 'day') {
-                    return new Date(b.period) - new Date(a.period);
-                }
-                return b.period.localeCompare(a.period);
-            });
-        }
-        
-        // 残高データ追加
         function addActualData() {
-            console.log('残高データ追加開始');
-            
-            const dateInput = document.getElementById('selectedDate');
-            const amountInput = document.getElementById('actualAmount');
+            var dateInput = document.getElementById('selectedDate');
+            var amountInput = document.getElementById('actualAmount');
             
             if (!dateInput || !amountInput) {
-                console.error('入力要素が見つかりません');
                 showMessage('入力フィールドが見つかりません', true);
-                return false;
+                return;
             }
             
-            const date = dateInput.value;
-            const amountValue = amountInput.value;
+            var date = dateInput.value;
+            var amountValue = amountInput.value;
             
-            console.log('入力値:', { date, amountValue });
-            
-            // バリデーション
             if (!date) {
                 showMessage('日付を選択してください', true);
-                return false;
+                return;
             }
             
             if (!amountValue || amountValue.trim() === '') {
-                showMessage('残高を入力してください', true);
-                return false;
+                showMessage('損益を入力してください', true);
+                return;
             }
             
-            const amount = parseFloat(amountValue);
-            
-            if (isNaN(amount)) {
+            var profit = parseFloat(amountValue);
+            if (isNaN(profit)) {
                 showMessage('有効な数値を入力してください', true);
-                return false;
+                return;
             }
             
-            if (amount <= 0) {
-                showMessage('正の数値を入力してください', true);
-                return false;
-            }
-            
-            // データ追加
-            actualData[date] = amount;
-            console.log('データ追加完了:', { date, amount });
-            
-            // フォームリセット
+            actualData[date] = profit;
             amountInput.value = '';
-            dateInput.value = todayString;
             
-            // 保存と表示更新
-            if (saveData()) {
-                updateDisplay();
-                updateChart();
-                showMessage(`${date}の残高 ¥${formatNumber(amount)} を記録しました`);
-                console.log('追加処理完了');
-            } else {
-                showMessage('データの保存に失敗しました', true);
-            }
-            
-            return true;
-        }
-        
-        // データ削除
-        function removeActualData(date) {
-            console.log('データ削除:', date);
-            
-            if (actualData[date]) {
-                delete actualData[date];
-                saveData();
-                updateDisplay();
-                updateChart();
-                showMessage(`${date}のデータを削除しました`);
-                console.log('削除完了');
-            }
-        }
-        
-        // 表示更新
-        function updateDisplay() {
+            saveData();
+            updateDataList();
             updateSummaryDisplay();
             updateOverallSummary();
+            updateChart();
+            
+            var sign = profit >= 0 ? '+' : '';
+            showMessage(date + 'の損益 ' + sign + '¥' + formatNumber(profit) + ' を記録しました');
         }
         
-        // サマリー表示更新
+        function removeData(date) {
+            delete actualData[date];
+            saveData();
+            updateDataList();
+            updateSummaryDisplay();
+            updateOverallSummary();
+            updateChart();
+            showMessage(date + 'のデータを削除しました');
+        }
+        
+        function calculateSummary() {
+            var entries = [];
+            for (var date in actualData) {
+                entries.push({
+                    date: new Date(date),
+                    dateStr: date,
+                    profit: actualData[date],
+                    amount: 0
+                });
+            }
+            
+            entries.sort(function(a, b) { return a.date - b.date; });
+
+            var cumulativeBalance = initialAmount;
+            for (var i = 0; i < entries.length; i++) {
+                cumulativeBalance += entries[i].profit;
+                entries[i].amount = cumulativeBalance;
+            }
+
+            var dailySummary = [];
+            for (var i = 0; i < entries.length; i++) {
+                dailySummary.push({
+                    period: entries[i].dateStr,
+                    profit: entries[i].profit,
+                    amount: entries[i].amount
+                });
+            }
+
+            return { dailySummary: dailySummary };
+        }
+        
+        function getSummaryData() {
+            var summary = calculateSummary();
+            var data = summary.dailySummary;
+            
+            return data.sort(function(a, b) {
+                return new Date(b.period) - new Date(a.period);
+            });
+        }
+        
         function updateSummaryDisplay() {
-            const summaryData = getSummaryData();
-            const container = document.getElementById('summaryData');
+            var summaryData = getSummaryData();
+            var container = document.getElementById('summaryData');
             
             if (!container) return;
             
             if (summaryData.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div style="font-size: 14px;">残高データがありません</div>
-                        <div style="font-size: 12px; margin-top: 4px;">残高を記録すると収支サマリーが表示されます</div>
-                    </div>
-                `;
+                container.innerHTML = '<div class="empty-state"><div style="font-size: 14px;">損益データがありません</div><div style="font-size: 12px; margin-top: 4px;">損益を記録すると収支サマリーが表示されます</div></div>';
                 return;
             }
             
-            container.innerHTML = summaryData.map(item => `
-                <div class="summary-list-item">
-                    <div>
-                        <div style="font-size: 14px; font-weight: 500;">${item.period}</div>
-                        ${item.count ? `<div style="font-size: 12px; color: #6b7280;">${item.count}日分</div>` : ''}
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 12px; color: #6b7280;">¥${formatNumberMobile(item.amount)}</div>
-                        <div style="font-size: 14px; font-weight: 500;" class="${item.profit >= 0 ? 'text-green' : 'text-red'}">
-                            ${item.profit >= 0 ? '+' : ''}¥${formatNumberMobile(item.profit)}
-                        </div>
-                        ${summaryView === 'day' ? `
-                            <button class="btn-delete" onclick="removeActualData('${item.period}')">削除</button>
-                        ` : ''}
-                    </div>
-                </div>
-            `).join('');
+            var html = '';
+            for (var i = 0; i < summaryData.length; i++) {
+                var item = summaryData[i];
+                var profitColor = item.profit >= 0 ? 'text-green' : 'text-red';
+                var profitSign = item.profit >= 0 ? '+' : '';
+                
+                html += '<div class="summary-list-item">' +
+                    '<div>' +
+                        '<div style="font-size: 14px; font-weight: 500;">' + item.period + '</div>' +
+                    '</div>' +
+                    '<div style="text-align: right;">' +
+                        '<div style="font-size: 12px; color: #6b7280;">¥' + formatNumberMobile(item.amount) + '</div>' +
+                        '<div style="font-size: 14px; font-weight: 500;" class="' + profitColor + '">' +
+                            profitSign + '¥' + formatNumberMobile(item.profit) +
+                        '</div>' +
+                        '<button class="btn-small" onclick="removeData(\'' + item.period + '\')">削除</button>' +
+                    '</div>' +
+                '</div>';
+            }
+            
+            container.innerHTML = html;
         }
         
-        // 全体サマリー更新（モバイル最適化）
         function updateOverallSummary() {
-            const container = document.getElementById('overallSummary');
+            var container = document.getElementById('overallSummary');
             if (!container) return;
             
-            const actualCount = Object.keys(actualData).length;
+            var actualCount = Object.keys(actualData).length;
             
             if (actualCount === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div style="font-size: 14px;">残高データがありません</div>
-                        <div style="font-size: 12px; margin-top: 4px;">残高を記録すると統計情報が表示されます</div>
-                    </div>
-                `;
+                container.innerHTML = '<div class="empty-state"><div style="font-size: 14px;">損益データがありません</div><div style="font-size: 12px; margin-top: 4px;">損益を記録すると統計情報が表示されます</div></div>';
                 return;
             }
             
-            // 統計計算
-            const budgetData = [];
-            for (let i = 0; i <= days; i++) {
-                const date = new Date();
-                date.setDate(date.getDate() + i);
-                const budgetAmount = calculateCompoundInterest(initialAmount, 0.01, i);
-                const dateStr = date.toISOString().split('T')[0];
-                budgetData.push({
-                    day: i,
-                    date: dateStr,
-                    budgetAmount: Math.round(budgetAmount),
-                    actualAmount: actualData[dateStr] || null
-                });
+            var cumulativeProfit = 0;
+            for (var date in actualData) {
+                cumulativeProfit += actualData[date];
             }
             
-            const stats = budgetData.reduce((acc, item) => {
-                if (item.actualAmount) {
-                    acc.actualCount++;
-                    acc.totalActual += item.actualAmount;
-                    acc.totalBudget += item.budgetAmount;
-                }
-                return acc;
-            }, { actualCount: 0, totalActual: 0, totalBudget: 0 });
+            var currentBalance = initialAmount + cumulativeProfit;
+            var budgetProfit = calculateCompoundInterest(initialAmount, 0.01, actualCount) - initialAmount;
+            var performance = budgetProfit > 0 ? ((cumulativeProfit - budgetProfit) / budgetProfit * 100) : 0;
             
-            const avgActual = stats.actualCount > 0 ? stats.totalActual / stats.actualCount : 0;
-            const avgBudget = stats.actualCount > 0 ? stats.totalBudget / stats.actualCount : 0;
-            const performance = avgBudget > 0 ? ((avgActual - avgBudget) / avgBudget * 100) : 0;
+            var performanceColor = performance >= 0 ? 'text-green' : 'text-red';
+            var cumulativeProfitColor = cumulativeProfit >= 0 ? 'text-green' : 'text-red';
+            var cumulativeProfitSign = cumulativeProfit >= 0 ? '+' : '';
             
-            // モバイル対応のレスポンシブ表示
-            container.innerHTML = `
-                <div class="summary-grid">
-                    <div class="summary-item summary-green">
-                        <div class="summary-label text-green">記録日数</div>
-                        <div class="summary-value text-green">${actualCount}日</div>
-                    </div>
-                    <div class="summary-item summary-purple">
-                        <div class="summary-label text-purple">達成率</div>
-                        <div class="summary-value ${performance >= 0 ? 'text-green' : 'text-red'}">${performance.toFixed(1)}%</div>
-                    </div>
-                </div>
-                <div class="summary-grid">
-                    <div class="summary-item summary-blue">
-                        <div class="summary-label text-blue">平均残高</div>
-                        <div class="summary-value-sm text-blue">¥${formatNumberMobile(avgActual)}</div>
-                    </div>
-                    <div class="summary-item summary-yellow">
-                        <div class="summary-label text-yellow">平均予算</div>
-                        <div class="summary-value-sm text-yellow">¥${formatNumberMobile(avgBudget)}</div>
-                    </div>
-                </div>
-            `;
+            container.innerHTML = 
+                '<div class="summary-grid">' +
+                    '<div class="summary-item summary-green">' +
+                        '<div class="summary-label text-green">記録日数</div>' +
+                        '<div class="summary-value text-green">' + actualCount + '日</div>' +
+                    '</div>' +
+                    '<div class="summary-item summary-purple">' +
+                        '<div class="summary-label text-purple">予算対比</div>' +
+                        '<div class="summary-value ' + performanceColor + '">' + performance.toFixed(1) + '%</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="summary-grid">' +
+                    '<div class="summary-item summary-blue">' +
+                        '<div class="summary-label text-blue">現在残高</div>' +
+                        '<div class="summary-value-sm text-blue">¥' + formatNumberMobile(currentBalance) + '</div>' +
+                    '</div>' +
+                    '<div class="summary-item summary-yellow">' +
+                        '<div class="summary-label text-yellow">累積損益</div>' +
+                        '<div class="summary-value-sm ' + cumulativeProfitColor + '">' + cumulativeProfitSign + '¥' + formatNumberMobile(cumulativeProfit) + '</div>' +
+                    '</div>' +
+                '</div>';
         }
         
-        // チャートスクロールバーのクラス
-        class ChartScrollbar {
-            constructor(chartInstance) {
-                this.chart = chartInstance;
-                this.scrollbar = document.getElementById('chartScrollbar');
-                this.thumb = document.getElementById('chartScrollbarThumb');
-                this.isDragging = false;
-                this.dragStartX = 0;
-                this.dragStartThumbLeft = 0;
-                this.visibleRange = { min: 0, max: 1 };
-                
-                if (this.scrollbar && this.thumb) {
-                    this.setupEventListeners();
-                    this.updateScrollbar();
-                }
+        function updateDataList() {
+            var container = document.getElementById('dataList');
+            if (!container) return;
+            
+            var dates = Object.keys(actualData).sort().reverse();
+            
+            if (dates.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 20px;">損益データがありません</div>';
+                return;
             }
             
-            setupEventListeners() {
-                // スクロールバートラック クリック
-                this.scrollbar.addEventListener('click', (e) => {
-                    if (e.target === this.thumb) return;
-                    
-                    const rect = this.scrollbar.getBoundingClientRect();
-                    const clickPosition = (e.clientX - rect.left) / rect.width;
-                    const thumbWidth = parseFloat(this.thumb.style.width) / 100;
-                    
-                    let newPosition = clickPosition - thumbWidth / 2;
-                    newPosition = Math.max(0, Math.min(1 - thumbWidth, newPosition));
-                    
-                    this.moveThumbToPosition(newPosition);
-                });
+            var html = '';
+            for (var i = 0; i < dates.length; i++) {
+                var date = dates[i];
+                var profit = actualData[date];
+                var sign = profit >= 0 ? '+' : '';
+                var color = profit >= 0 ? '#16a34a' : '#dc2626';
                 
-                // サムドラッグ開始
-                this.thumb.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    this.startDrag(e.clientX);
-                });
-                
-                this.thumb.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    this.startDrag(e.touches[0].clientX);
-                }, { passive: false });
-                
-                // ドラッグ中
-                document.addEventListener('mousemove', (e) => {
-                    if (this.isDragging) {
-                        e.preventDefault();
-                        this.handleDrag(e.clientX);
-                    }
-                });
-                
-                document.addEventListener('touchmove', (e) => {
-                    if (this.isDragging) {
-                        e.preventDefault();
-                        this.handleDrag(e.touches[0].clientX);
-                    }
-                }, { passive: false });
-                
-                // ドラッグ終了
-                document.addEventListener('mouseup', () => {
-                    this.endDrag();
-                });
-                
-                document.addEventListener('touchend', () => {
-                    this.endDrag();
-                });
-                
-                // チャートのズーム/パン変更を監視
-                if (this.chart) {
-                    this.chart.options.onZoomComplete = () => {
-                        this.updateScrollbar();
-                    };
-                    this.chart.options.onPanComplete = () => {
-                        this.updateScrollbar();
-                    };
-                }
+                html += '<div class="data-item">' +
+                    '<div>' +
+                        '<strong>' + date + '</strong><br>' +
+                        '<span style="color: ' + color + ';">' + sign + '¥' + formatNumber(profit) + '</span>' +
+                    '</div>' +
+                    '<button class="btn-small" onclick="removeData(\'' + date + '\')">削除</button>' +
+                '</div>';
             }
             
-            startDrag(clientX) {
-                this.isDragging = true;
-                this.dragStartX = clientX;
-                const rect = this.scrollbar.getBoundingClientRect();
-                const thumbRect = this.thumb.getBoundingClientRect();
-                this.dragStartThumbLeft = (thumbRect.left - rect.left) / rect.width;
-                this.thumb.style.cursor = 'grabbing';
-            }
-            
-            handleDrag(clientX) {
-                const rect = this.scrollbar.getBoundingClientRect();
-                const deltaX = clientX - this.dragStartX;
-                const deltaRatio = deltaX / rect.width;
-                
-                let newPosition = this.dragStartThumbLeft + deltaRatio;
-                const thumbWidth = parseFloat(this.thumb.style.width) / 100;
-                newPosition = Math.max(0, Math.min(1 - thumbWidth, newPosition));
-                
-                this.moveThumbToPosition(newPosition);
-            }
-            
-            endDrag() {
-                this.isDragging = false;
-                this.thumb.style.cursor = 'grab';
-            }
-            
-            moveThumbToPosition(position) {
-                const thumbWidth = parseFloat(this.thumb.style.width) / 100;
-                this.thumb.style.left = (position * 100) + '%';
-                
-                // チャートの表示範囲を更新
-                const totalDataPoints = this.chart.data.labels.length;
-                const visibleDataPoints = Math.max(1, Math.floor(totalDataPoints * thumbWidth));
-                const startIndex = Math.floor(position * (totalDataPoints - visibleDataPoints));
-                const endIndex = startIndex + visibleDataPoints - 1;
-                
-                this.chart.zoomScale('x', {
-                    min: startIndex,
-                    max: Math.min(endIndex, totalDataPoints - 1)
-                });
-                
-                this.visibleRange = {
-                    min: position,
-                    max: position + thumbWidth
-                };
-            }
-            
-            updateScrollbar() {
-                if (!this.chart || !this.chart.data.labels) return;
-                
-                const totalDataPoints = this.chart.data.labels.length;
-                if (totalDataPoints === 0) return;
-                
-                // チャートの現在の表示範囲を取得
-                const xScale = this.chart.scales.x;
-                const currentMin = Math.max(0, Math.floor(xScale.min || 0));
-                const currentMax = Math.min(totalDataPoints - 1, Math.ceil(xScale.max || totalDataPoints - 1));
-                
-                // スクロールバーのサムのサイズと位置を計算
-                const visibleDataPoints = currentMax - currentMin + 1;
-                const thumbWidth = Math.max(0.05, Math.min(1, visibleDataPoints / totalDataPoints)); // 最小5%
-                const thumbPosition = currentMin / (totalDataPoints - visibleDataPoints || 1);
-                
-                // サムのスタイルを更新
-                this.thumb.style.width = (thumbWidth * 100) + '%';
-                this.thumb.style.left = (thumbPosition * (1 - thumbWidth) * 100) + '%';
-                
-                this.visibleRange = {
-                    min: thumbPosition * (1 - thumbWidth),
-                    max: thumbPosition * (1 - thumbWidth) + thumbWidth
-                };
-            }
-            
-            destroy() {
-                // イベントリスナーの削除は自動で行われる
-                this.chart = null;
-                this.scrollbar = null;
-                this.thumb = null;
-            }
+            container.innerHTML = html;
         }
         
-        // グラフ更新（横スクロール対応）
         function updateChart() {
-            const ctx = document.getElementById('chart');
+            var ctx = document.getElementById('chart');
             if (!ctx) return;
             
-            // 既存のチャートを破棄
             if (chart) {
                 chart.destroy();
             }
             
-            if (chartScrollbar) {
-                chartScrollbar.destroy();
-                chartScrollbar = null;
+            var labels = [];
+            var budgetData = [];
+            var actualBalances = [];
+            var runningBalance = initialAmount;
+            
+            for (var i = 0; i <= days; i++) {
+                var currentDate = new Date(today);
+                currentDate.setDate(today.getDate() + i);
+                var dateStr = currentDate.toISOString().split('T')[0];
+                
+                var month = currentDate.getMonth() + 1;
+                var day = currentDate.getDate();
+                labels.push(month + '/' + day);
+                
+                var budgetAmount = calculateCompoundInterest(initialAmount, 0.01, i);
+                budgetData.push(Math.round(budgetAmount));
+                
+                if (actualData[dateStr] !== undefined) {
+                    runningBalance += actualData[dateStr];
+                    actualBalances.push(runningBalance);
+                } else {
+                    actualBalances.push(null);
+                }
             }
             
-            // データ準備
-            const actualDates = Object.keys(actualData).sort();
-            const labels = [];
-            const budgetAmounts = [];
-            const actualAmounts = [];
-            
-            // 表示期間の決定
-            let startDate, totalDays;
-            
-            if (actualDates.length === 0) {
-                // データなしの場合：今日から予測期間
-                startDate = new Date(today);
-                totalDays = days;
-            } else {
-                // データありの場合：最初のデータ日から予測期間まで
-                startDate = new Date(actualDates[0]);
-                const daysSinceFirstData = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
-                totalDays = Math.max(daysSinceFirstData + days, 90); // 最低90日表示
-            }
-            
-            // グラフデータ生成
-            for (let i = 0; i <= totalDays; i++) {
-                const currentDate = new Date(startDate);
-                currentDate.setDate(startDate.getDate() + i);
-                const dateStr = currentDate.toISOString().split('T')[0];
+            try {
+                if (typeof ChartZoom !== 'undefined') {
+                    Chart.register(ChartZoom);
+                }
                 
-                // ラベル（月/日形式）
-                const month = currentDate.getMonth() + 1;
-                const day = currentDate.getDate();
-                labels.push(`${month}/${day}`);
-                
-                // 予算計算
-                const budgetAmount = calculateCompoundInterest(initialAmount, 0.01, i);
-                budgetAmounts.push(Math.round(budgetAmount));
-                
-                // 実際の残高
-                actualAmounts.push(actualData[dateStr] || null);
-            }
-            
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
                             label: '予算',
-                            data: budgetAmounts,
+                            data: budgetData,
                             borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
                             borderWidth: 2,
                             borderDash: [5, 5],
                             fill: false,
-                            pointRadius: 0,
-                            pointHoverRadius: 4,
-                            tension: 0.1
-                        },
-                        {
+                            pointRadius: 0
+                        }, {
                             label: '残高',
-                            data: actualAmounts,
+                            data: actualBalances,
                             borderColor: '#16a34a',
-                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
                             borderWidth: 3,
                             fill: false,
                             pointRadius: 6,
-                            pointHoverRadius: 8,
                             pointBackgroundColor: '#16a34a',
                             pointBorderColor: '#ffffff',
                             pointBorderWidth: 2,
-                            spanGaps: true,
-                            tension: 0.1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
+                            spanGaps: true
+                        }]
                     },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                font: { size: 12 },
-                                padding: 15,
-                                usePointStyle: true
-                            }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
                         },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleColor: 'white',
-                            bodyColor: 'white',
-                            borderColor: 'rgba(255, 255, 255, 0.1)',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.parsed.y;
-                                    if (value === null) return null;
-                                    return `${context.dataset.label}: ¥${formatNumberMobile(value)}`;
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            zoom: {
+                                pan: {
+                                    enabled: true,
+                                    mode: 'xy',
+                                    threshold: 10
+                                },
+                                zoom: {
+                                    wheel: {
+                                        enabled: true,
+                                        speed: 0.1
+                                    },
+                                    pinch: {
+                                        enabled: true
+                                    },
+                                    mode: 'xy'
                                 }
                             }
                         },
-                        zoom: {
-                            pan: {
-                                enabled: true,
-                                mode: 'xy',
-                                threshold: 10
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: '日付',
+                                    font: { size: 11 }
+                                },
+                                min: Math.max(0, labels.length - 30),
+                                max: labels.length - 1
                             },
-                            zoom: {
-                                wheel: {
-                                    enabled: true,
-                                    speed: 0.1
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: '金額（円）',
+                                    font: { size: 11 }
                                 },
-                                pinch: {
-                                    enabled: true
-                                },
-                                mode: 'xy',
-                                limits: {
-                                    x: { min: 0, max: labels.length - 1 },
-                                    y: { min: 'original', max: 'original' }
-                                },
-                                onZoomComplete: function() {
-                                    if (chartScrollbar) {
-                                        setTimeout(() => chartScrollbar.updateScrollbar(), 50);
+                                beginAtZero: false,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '¥' + formatNumberMobile(value);
                                     }
                                 }
                             }
                         }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: '日付',
-                                font: { size: 11 }
-                            },
-                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                            ticks: {
-                                font: { size: 9 },
-                                maxTicksLimit: 12,
-                                callback: function(value, index) {
-                                    // 週に1回表示
-                                    return index % 7 === 0 ? this.getLabelForValue(value) : '';
-                                }
-                            },
-                            // 初期表示範囲（最新30日）
-                            min: Math.max(0, labels.length - 30),
-                            max: labels.length - 1
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: '金額（円）',
-                                font: { size: 11 }
-                            },
-                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                            ticks: {
-                                font: { size: 10 },
-                                callback: function(value) {
-                                    return '¥' + formatNumberMobile(value);
-                                }
-                            }
-                        }
-                    },
-                    onResize: function() {
-                        if (chartScrollbar) {
-                            setTimeout(() => chartScrollbar.updateScrollbar(), 100);
-                        }
                     }
-                }
-            });
-            
-            // スクロールバーを初期化
-            chartScrollbar = new ChartScrollbar(chart);
-        }
-        
-        // グラフ操作関数
-        function resetChartView() {
-            if (chart) {
-                chart.resetZoom();
-                if (chartScrollbar) {
-                    chartScrollbar.updateScrollbar();
-                }
-            }
-        }
-        
-        function showRecentDays(dayCount) {
-            if (chart && chart.data.labels.length > 0) {
-                const totalDays = chart.data.labels.length;
-                const startIndex = Math.max(0, totalDays - dayCount);
-                
-                chart.zoomScale('x', {
-                    min: startIndex,
-                    max: totalDays - 1
                 });
                 
-                if (chartScrollbar) {
-                    chartScrollbar.updateScrollbar();
-                }
+            } catch (error) {
+                console.error('グラフ作成エラー:', error);
+                showMessage('グラフの作成に失敗しました', true);
             }
         }
         
-        // ズーム操作関数
         function zoomIn() {
             if (chart) {
-                chart.zoom(1.5);
-                if (chartScrollbar) {
-                    setTimeout(() => chartScrollbar.updateScrollbar(), 100);
+                try {
+                    chart.zoom(1.5);
+                } catch (error) {
+                    console.error('ズームイン失敗:', error);
                 }
             }
         }
         
         function zoomOut() {
             if (chart) {
-                chart.zoom(0.67);
-                if (chartScrollbar) {
-                    setTimeout(() => chartScrollbar.updateScrollbar(), 100);
+                try {
+                    chart.zoom(0.67);
+                } catch (error) {
+                    console.error('ズームアウト失敗:', error);
                 }
             }
         }
         
-        // イベントリスナー設定
-        function setupEventListeners() {
-            // 初期金額変更
-            const initialInput = document.getElementById('initialAmount');
-            if (initialInput) {
-                initialInput.addEventListener('input', (e) => {
-                    const value = parseFloat(e.target.value);
-                    if (!isNaN(value) && value > 0) {
-                        initialAmount = value;
-                        saveData();
-                        updateDisplay();
-                        updateChart();
-                    }
-                });
-            }
-            
-            // 予測日数変更
-            const daysInput = document.getElementById('days');
-            if (daysInput) {
-                daysInput.addEventListener('input', (e) => {
-                    const value = parseInt(e.target.value);
-                    if (!isNaN(value) && value > 0) {
-                        days = value;
-                        saveData();
-                        updateDisplay();
-                        updateChart();
-                    }
-                });
-            }
-            
-            // 残高追加ボタン
-            const addButton = document.getElementById('addButton');
-            if (addButton) {
-                addButton.addEventListener('click', addActualData);
-            }
-            
-            // 残高入力でEnterキー
-            const amountInput = document.getElementById('actualAmount');
-            if (amountInput) {
-                amountInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        addActualData();
-                    }
-                });
-            }
-            
-            // サマリータブ切り替え
-            document.querySelectorAll('[data-view]').forEach(button => {
-                button.addEventListener('click', () => {
-                    summaryView = button.getAttribute('data-view');
-                    
-                    // タブの見た目を更新
-                    document.querySelectorAll('[data-view]').forEach(btn => {
-                        btn.className = 'btn-tab btn-tab-inactive';
-                    });
-                    button.className = 'btn-tab btn-tab-active';
-                    
-                    updateSummaryDisplay();
-                });
-            });
-            
-            // ページ離脱時の保存
-            window.addEventListener('beforeunload', saveData);
-            
-            // ページ可視性変更時の保存
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    saveData();
+        function resetChartView() {
+            if (chart) {
+                try {
+                    chart.resetZoom();
+                } catch (error) {
+                    console.error('リセット失敗:', error);
                 }
-            });
+            }
         }
         
-        // 初期化
+        function showRecentDays(dayCount) {
+            if (chart && chart.data.labels.length > 0) {
+                try {
+                    var totalDays = chart.data.labels.length;
+                    var startIndex = Math.max(0, totalDays - dayCount);
+                    
+                } catch (error) {
+                    console.error('期間表示失敗:', error);
+                }
+            }
+        }
+        
         function initialize() {
-            console.log('アプリケーション初期化開始');
-            
-            // 今日の日付設定
-            const dateInput = document.getElementById('selectedDate');
+            var dateInput = document.getElementById('selectedDate');
             if (dateInput) {
                 dateInput.value = todayString;
             }
             
-            // データ読み込み
             loadData();
             
-            // イベントリスナー設定
-            setupEventListeners();
+            document.getElementById('initialAmount').value = initialAmount;
+            document.getElementById('days').value = days;
             
-            // 初期表示更新
-            updateDisplay();
-            updateChart();
+            document.getElementById('addButton').addEventListener('click', function() {
+                addActualData();
+            });
             
-            console.log('アプリケーション初期化完了');
-        }
-        
-        // DOM読み込み完了時に初期化
-        document.addEventListener('DOMContentLoaded', initialize);
-        
-        // エラーハンドリング
-        window.addEventListener('error', (e) => {
-            console.error('アプリケーションエラー:', e.error);
-            showMessage('アプリケーションでエラーが発生しました', true);
-        });
-        
-        // デバッグ用関数
-        window.debugApp = {
-            showData: () => {
-                console.log('現在のデータ:', {
-                    initialAmount,
-                    days,
-                    actualData,
-                    summaryView
-                });
-            },
-            testAdd: () => {
-                const testDate = '2025-01-01';
-                const testAmount = 150000;
-                actualData[testDate] = testAmount;
+            document.getElementById('initialAmount').addEventListener('change', function() {
+                initialAmount = parseFloat(this.value) || 100000;
                 saveData();
-                updateDisplay();
+                updateOverallSummary();
                 updateChart();
-                showMessage(`テストデータ追加: ${testDate} - ¥${formatNumber(testAmount)}`);
-            },
-            clearData: () => {
-                if (confirm('全てのデータを削除しますか？')) {
-                    actualData = {};
-                    saveData();
-                    updateDisplay();
-                    updateChart();
-                    showMessage('全データを削除しました');
-                }
+            });
+            
+            document.getElementById('days').addEventListener('change', function() {
+                days = parseInt(this.value) || 30;
+                saveData();
+                updateChart();
+            });
+            
+            document.getElementById('zoomInBtn').addEventListener('click', function() {
+                zoomIn();
+            });
+            
+            document.getElementById('zoomOutBtn').addEventListener('click', function() {
+                zoomOut();
+            });
+            
+            document.getElementById('resetViewBtn').addEventListener('click', function() {
+                resetChartView();
+            });
+            
+            document.getElementById('recent30Btn').addEventListener('click', function() {
+                showRecentDays(30);
+            });
+            
+            document.getElementById('recent7Btn').addEventListener('click', function() {
+                showRecentDays(7);
+            });
+            
+            var tabButtons = document.querySelectorAll('[data-view]');
+            for (var i = 0; i < tabButtons.length; i++) {
+                (function(button) {
+                    button.addEventListener('click', function() {
+                        summaryView = this.getAttribute('data-view');
+                        
+                        var allTabs = document.querySelectorAll('[data-view]');
+                        for (var j = 0; j < allTabs.length; j++) {
+                            allTabs[j].className = 'btn-tab btn-tab-inactive';
+                        }
+                        this.className = 'btn-tab btn-tab-active';
+                        
+                        updateSummaryDisplay();
+                    });
+                })(tabButtons[i]);
             }
-        };
-        
-        // localStorageテスト
-        function testLocalStorage() {
-            try {
-                localStorage.setItem('test', 'hello');
-                const result = localStorage.getItem('test');
-                localStorage.removeItem('test');
-                console.log('localStorage動作テスト:', result === 'hello' ? '正常' : '異常');
-                return result === 'hello';
-            } catch (e) {
-                console.error('localStorage使用不可:', e);
-                showMessage('ブラウザの設定でデータ保存が無効になっています', true);
-                return false;
-            }
+            
+            updateDataList();
+            updateSummaryDisplay();
+            updateOverallSummary();
+            updateChart();
         }
         
-        // 初期化時にテスト実行
-        testLocalStorage();
+        document.addEventListener('DOMContentLoaded', initialize);
     </script>
 </body>
 </html>
