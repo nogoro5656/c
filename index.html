@@ -336,86 +336,94 @@
         <div id="successMessage" class="message success-message"></div>
         <div id="errorMessage" class="message error-message"></div>
         
-        <div class="card">
-            <h2 class="card-title">基本設定</h2>
-            <div class="grid-2">
-                <div>
-                    <label class="label">初期金額（円）</label>
-                    <input type="number" id="initialAmount" class="input" value="100000" min="1" step="1000">
+        <div class="top-section">
+            <div class="card">
+                <h2 class="card-title">基本設定</h2>
+                <div class="grid-2">
+                    <div>
+                        <label class="label">初期金額（円）</label>
+                        <input type="number" id="initialAmount" class="input" value="100000" min="1" step="1000">
+                    </div>
+                    <div>
+                        <label class="label">予測日数</label>
+                        <input type="number" id="days" class="input" value="30" min="1" max="365">
+                    </div>
                 </div>
-                <div>
-                    <label class="label">予測日数</label>
-                    <input type="number" id="days" class="input" value="30" min="1" max="365">
+            </div>
+
+            <div class="card">
+                <h2 class="card-title blue-title">損益記録</h2>
+                <div class="grid-2" style="margin-bottom: 12px;">
+                    <div>
+                        <label class="label">日付</label>
+                        <input type="date" id="selectedDate" class="input">
+                    </div>
+                    <div>
+                        <label class="label">損益（円）</label>
+                        <input type="number" id="actualAmount" class="input" placeholder="±損益を入力" step="1000">
+                    </div>
                 </div>
+                <button id="addButton" class="btn">損益を記録</button>
             </div>
         </div>
+        
+        <div class="main-layout">
+            <div class="left-column">
+                <div class="card">
+                    <h2 class="card-title">収支サマリー</h2>
+                    <div class="grid-4" id="summaryTabs">
+                        <button class="btn-tab btn-tab-active" data-view="day">日別</button>
+                        <button class="btn-tab btn-tab-inactive" data-view="week">週別</button>
+                        <button class="btn-tab btn-tab-inactive" data-view="month">月別</button>
+                        <button class="btn-tab btn-tab-inactive" data-view="year">年別</button>
+                    </div>
+                    <div id="summaryData" class="summary-list">
+                        <div class="empty-state">
+                            <div style="font-size: 14px;">損益データがありません</div>
+                            <div style="font-size: 12px; margin-top: 4px;">損益を記録すると収支サマリーが表示されます</div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="card">
-            <h2 class="card-title blue-title">損益記録</h2>
-            <div class="grid-2" style="margin-bottom: 12px;">
-                <div>
-                    <label class="label">日付</label>
-                    <input type="date" id="selectedDate" class="input">
+                <div class="card">
+                    <h2 class="card-title">全体サマリー</h2>
+                    <div id="overallSummary">
+                        <div class="empty-state">
+                            <div style="font-size: 14px;">損益データがありません</div>
+                            <div style="font-size: 12px; margin-top: 4px;">損益を記録すると統計情報が表示されます</div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="label">損益（円）</label>
-                    <input type="number" id="actualAmount" class="input" placeholder="±損益を入力" step="1000">
-                </div>
-            </div>
-            <button id="addButton" class="btn">損益を記録</button>
-        </div>
 
-        <div class="card">
-            <h2 class="card-title">収支サマリー</h2>
-            <div class="grid-4" id="summaryTabs">
-                <button class="btn-tab btn-tab-active" data-view="day">日別</button>
-                <button class="btn-tab btn-tab-inactive" data-view="week">週別</button>
-                <button class="btn-tab btn-tab-inactive" data-view="month">月別</button>
-                <button class="btn-tab btn-tab-inactive" data-view="year">年別</button>
-            </div>
-            <div id="summaryData" class="summary-list">
-                <div class="empty-state">
-                    <div style="font-size: 14px;">損益データがありません</div>
-                    <div style="font-size: 12px; margin-top: 4px;">損益を記録すると収支サマリーが表示されます</div>
+                <div class="card">
+                    <h2 class="card-title">記録データ</h2>
+                    <div id="dataList" class="data-list">
+                        <div style="text-align: center; color: #6b7280; padding: 20px;">
+                            損益データがありません
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="card">
-            <h2 class="card-title">全体サマリー</h2>
-            <div id="overallSummary">
-                <div class="empty-state">
-                    <div style="font-size: 14px;">損益データがありません</div>
-                    <div style="font-size: 12px; margin-top: 4px;">損益を記録すると統計情報が表示されます</div>
+            
+            <div class="right-column">
+                <div class="chart-container">
+                    <h2 class="card-title">予算・残高推移グラフ</h2>
+                    <div class="chart-controls">
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" id="zoomInBtn" title="ズームイン">+</button>
+                            <button class="zoom-btn" id="zoomOutBtn" title="ズームアウト">−</button>
+                        </div>
+                        <button class="chart-btn" id="resetViewBtn">全期間表示</button>
+                        <button class="chart-btn" id="recent30Btn">最新30日</button>
+                        <button class="chart-btn" id="recent7Btn">最新7日</button>
+                    </div>
+                    <div style="font-size: 11px; color: #6b7280; text-align: center; margin-bottom: 8px;">
+                        マウスホイールでズーム、ドラッグでパン操作
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="chart"></canvas>
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2 class="card-title">記録データ</h2>
-            <div id="dataList" class="data-list">
-                <div style="text-align: center; color: #6b7280; padding: 20px;">
-                    損益データがありません
-                </div>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <h2 class="card-title">グラフ</h2>
-            <div class="chart-controls">
-                <div class="zoom-controls">
-                    <button class="zoom-btn" id="zoomInBtn" title="ズームイン">+</button>
-                    <button class="zoom-btn" id="zoomOutBtn" title="ズームアウト">−</button>
-                </div>
-                <button class="chart-btn" id="resetViewBtn">全期間表示</button>
-                <button class="chart-btn" id="recent30Btn">最新30日</button>
-                <button class="chart-btn" id="recent7Btn">最新7日</button>
-            </div>
-            <div style="font-size: 11px; color: #6b7280; text-align: center; margin-bottom: 8px;">
-                📱 ピンチでズーム、左右・上下スワイプでパン操作
-            </div>
-            <div class="chart-wrapper">
-                <canvas id="chart"></canvas>
             </div>
         </div>
     </div>
@@ -702,8 +710,12 @@
         }
         
         function updateChart() {
+            console.log('グラフ更新開始');
             var ctx = document.getElementById('chart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.error('Canvas要素が見つかりません');
+                return;
+            }
             
             if (chart) {
                 chart.destroy();
@@ -714,9 +726,24 @@
             var actualBalances = [];
             var runningBalance = initialAmount;
             
+            // データがある場合の開始日を計算
+            var profitDates = Object.keys(actualData).sort();
+            var startDate;
+            
+            if (profitDates.length > 0) {
+                // 最初のデータ日から開始
+                startDate = new Date(profitDates[0]);
+            } else {
+                // データがない場合は今日から開始
+                startDate = new Date(today);
+            }
+            
+            console.log('開始日:', startDate.toISOString().split('T')[0]);
+            console.log('損益データ:', actualData);
+            
             for (var i = 0; i <= days; i++) {
-                var currentDate = new Date(today);
-                currentDate.setDate(today.getDate() + i);
+                var currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
                 var dateStr = currentDate.toISOString().split('T')[0];
                 
                 var month = currentDate.getMonth() + 1;
@@ -729,10 +756,17 @@
                 if (actualData[dateStr] !== undefined) {
                     runningBalance += actualData[dateStr];
                     actualBalances.push(runningBalance);
+                    console.log(dateStr + ': 損益=' + actualData[dateStr] + ', 累積残高=' + runningBalance);
                 } else {
                     actualBalances.push(null);
                 }
             }
+            
+            console.log('グラフデータ:', {
+                labels: labels.length,
+                budgetData: budgetData.slice(0, 5),
+                actualBalances: actualBalances.filter(x => x !== null)
+            });
             
             try {
                 if (typeof ChartZoom !== 'undefined') {
@@ -750,7 +784,8 @@
                             borderWidth: 2,
                             borderDash: [5, 5],
                             fill: false,
-                            pointRadius: 0
+                            pointRadius: 0,
+                            tension: 0.1
                         }, {
                             label: '残高',
                             data: actualBalances,
@@ -761,7 +796,8 @@
                             pointBackgroundColor: '#16a34a',
                             pointBorderColor: '#ffffff',
                             pointBorderWidth: 2,
-                            spanGaps: true
+                            spanGaps: true,
+                            tension: 0.1
                         }]
                     },
                     options: {
@@ -773,7 +809,24 @@
                         },
                         plugins: {
                             legend: {
-                                position: 'top'
+                                position: 'top',
+                                labels: {
+                                    font: { size: 12 },
+                                    padding: 15,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                callbacks: {
+                                    label: function(context) {
+                                        var value = context.parsed.y;
+                                        if (value === null) return null;
+                                        return context.dataset.label + ': ¥' + formatNumberMobile(value);
+                                    }
+                                }
                             },
                             zoom: {
                                 pan: {
@@ -800,6 +853,14 @@
                                     text: '日付',
                                     font: { size: 11 }
                                 },
+                                grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                                ticks: {
+                                    font: { size: 9 },
+                                    maxTicksLimit: 12,
+                                    callback: function(value, index) {
+                                        return index % 7 === 0 ? this.getLabelForValue(value) : '';
+                                    }
+                                },
                                 min: Math.max(0, labels.length - 30),
                                 max: labels.length - 1
                             },
@@ -809,8 +870,10 @@
                                     text: '金額（円）',
                                     font: { size: 11 }
                                 },
+                                grid: { color: 'rgba(0, 0, 0, 0.05)' },
                                 beginAtZero: false,
                                 ticks: {
+                                    font: { size: 10 },
                                     callback: function(value) {
                                         return '¥' + formatNumberMobile(value);
                                     }
@@ -820,9 +883,11 @@
                     }
                 });
                 
+                console.log('グラフ作成成功');
+                
             } catch (error) {
                 console.error('グラフ作成エラー:', error);
-                showMessage('グラフの作成に失敗しました', true);
+                showMessage('グラフの作成に失敗しました: ' + error.message, true);
             }
         }
         
