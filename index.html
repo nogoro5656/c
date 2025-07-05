@@ -299,9 +299,82 @@
             background-color: #1d4ed8;
         }
         
-        .data-list {
-            max-height: 200px;
-            overflow-y: auto;
+        .chart-scrollbar-container {
+            margin-top: 15px;
+            padding: 0 10px;
+        }
+        
+        .chart-scrollbar-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .scrollbar-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #495057;
+            white-space: nowrap;
+        }
+        
+        .chart-scrollbar-range {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #dee2e6;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        
+        .chart-scrollbar-range::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .chart-scrollbar-range::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .chart-scrollbar-range::-webkit-slider-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #dee2e6;
+            border-radius: 3px;
+        }
+        
+        .chart-scrollbar-range::-moz-range-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #dee2e6;
+            border-radius: 3px;
+            border: none;
+        }
+        
+        .scrollbar-info {
+            font-size: 11px;
+            color: #6c757d;
+            white-space: nowrap;
+            min-width: 60px;
+            text-align: right;
         }
         
         .data-item {
@@ -423,19 +496,120 @@
                     <div class="chart-wrapper">
                         <canvas id="chart"></canvas>
                     </div>
+                    <div class="chart-scrollbar-container">
+                        <div class="chart-scrollbar-controls">
+                            <span class="scrollbar-label">表示範囲:</span>
+                            <input type="range" id="chartScrollbar" class="chart-scrollbar-range" min="0" max="100" value="70">
+                            <span class="scrollbar-info" id="scrollbarInfo">最新30日</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        var initialAmount = 100000;
-        var days = 30;
-        var actualData = {};
+        // メモリベースのデータストレージ
+        var appData = {
+            initialAmount: 100000,
+            days: 30,
+            actualData: {}
+        };
+        
         var chart = null;
         var summaryView = 'day';
         var today = new Date();
         var todayString = today.toISOString().split('T')[0];
+        var chartScrollbar = null;
+        
+        // スクロールバー管理クラス
+        function ChartScrollbarManager(chartInstance) {
+            this.chart = chartInstance;
+            this.scrollbarElement = document.getElementById('chartScrollbar');
+            this.infoElement = document.getElementById('scrollbarInfo');
+            this.totalDays = 0;
+            this.viewDays = 30;
+            
+            this.init();
+        }
+        
+        ChartScrollbarManager.prototype.init = function() {
+            var self = this;
+            if (this.scrollbarElement) {
+                this.scrollbarElement.addEventListener('input', function() {
+                    self.updateChartView();
+                });
+            }
+            this.updateScrollbar();
+        };
+        
+        ChartScrollbarManager.prototype.updateScrollbar = function() {
+            if (!this.chart || !this.chart.data || !this.chart.data.labels) return;
+            
+            this.totalDays = this.chart.data.labels.length;
+            if (this.totalDays <= this.viewDays) {
+                if (this.scrollbarElement) {
+                    this.scrollbarElement.style.display = 'none';
+                }
+                if (this.infoElement) {
+                    this.infoElement.textContent = '全期間';
+                }
+                return;
+            }
+            
+            if (this.scrollbarElement) {
+                this.scrollbarElement.style.display = 'block';
+                this.scrollbarElement.max = this.totalDays - this.viewDays;
+                
+                // デフォルトで最新データを表示
+                var defaultPosition = Math.max(0, this.totalDays - this.viewDays);
+                this.scrollbarElement.value = defaultPosition;
+            }
+            
+            this.updateChartView();
+        };
+        
+        ChartScrollbarManager.prototype.updateChartView = function() {
+            if (!this.chart || !this.scrollbarElement) return;
+            
+            var position = parseInt(this.scrollbarElement.value);
+            var startIndex = position;
+            var endIndex = Math.min(position + this.viewDays - 1, this.totalDays - 1);
+            
+            if (this.chart.options && this.chart.options.scales && this.chart.options.scales.x) {
+                this.chart.options.scales.x.min = startIndex;
+                this.chart.options.scales.x.max = endIndex;
+                this.chart.update('none'); // アニメーションなしで更新
+            }
+            
+            // 情報表示を更新
+            if (this.infoElement) {
+                var displayDays = endIndex - startIndex + 1;
+                if (displayDays >= this.totalDays) {
+                    this.infoElement.textContent = '全期間';
+                } else {
+                    this.infoElement.textContent = displayDays + '日表示';
+                }
+            }
+        };
+        
+        ChartScrollbarManager.prototype.setViewDays = function(days) {
+            this.viewDays = days;
+            this.updateScrollbar();
+        };
+        
+        ChartScrollbarManager.prototype.scrollToEnd = function() {
+            if (this.scrollbarElement && this.totalDays > this.viewDays) {
+                this.scrollbarElement.value = this.totalDays - this.viewDays;
+                this.updateChartView();
+            }
+        };
+        
+        ChartScrollbarManager.prototype.destroy = function() {
+            if (this.scrollbarElement) {
+                this.scrollbarElement.removeEventListener('input', this.updateChartView);
+            }
+        };
         
         function formatNumber(num) {
             return new Intl.NumberFormat('ja-JP').format(Math.round(num));
@@ -471,38 +645,6 @@
             }
         }
         
-        function saveData() {
-            try {
-                var data = {
-                    initialAmount: initialAmount,
-                    days: days,
-                    actualData: actualData
-                };
-                localStorage.setItem('compoundCalculatorData', JSON.stringify(data));
-                return true;
-            } catch (error) {
-                console.error('データ保存エラー:', error);
-                return false;
-            }
-        }
-        
-        function loadData() {
-            try {
-                var saved = localStorage.getItem('compoundCalculatorData');
-                if (saved) {
-                    var data = JSON.parse(saved);
-                    initialAmount = data.initialAmount || 100000;
-                    days = data.days || 30;
-                    actualData = data.actualData || {};
-                    return true;
-                }
-                return false;
-            } catch (error) {
-                console.error('データ読み込みエラー:', error);
-                return false;
-            }
-        }
-        
         function calculateCompoundInterest(principal, rate, time) {
             return principal * Math.pow(1 + rate, time);
         }
@@ -535,10 +677,9 @@
                 return;
             }
             
-            actualData[date] = profit;
+            appData.actualData[date] = profit;
             amountInput.value = '';
             
-            saveData();
             updateDataList();
             updateSummaryDisplay();
             updateOverallSummary();
@@ -549,8 +690,7 @@
         }
         
         function removeData(date) {
-            delete actualData[date];
-            saveData();
+            delete appData.actualData[date];
             updateDataList();
             updateSummaryDisplay();
             updateOverallSummary();
@@ -560,18 +700,18 @@
         
         function calculateSummary() {
             var entries = [];
-            for (var date in actualData) {
+            for (var date in appData.actualData) {
                 entries.push({
                     date: new Date(date),
                     dateStr: date,
-                    profit: actualData[date],
+                    profit: appData.actualData[date],
                     amount: 0
                 });
             }
             
             entries.sort(function(a, b) { return a.date - b.date; });
 
-            var cumulativeBalance = initialAmount;
+            var cumulativeBalance = appData.initialAmount;
             for (var i = 0; i < entries.length; i++) {
                 cumulativeBalance += entries[i].profit;
                 entries[i].amount = cumulativeBalance;
@@ -636,7 +776,7 @@
             var container = document.getElementById('overallSummary');
             if (!container) return;
             
-            var actualCount = Object.keys(actualData).length;
+            var actualCount = Object.keys(appData.actualData).length;
             
             if (actualCount === 0) {
                 container.innerHTML = '<div class="empty-state"><div style="font-size: 14px;">損益データがありません</div><div style="font-size: 12px; margin-top: 4px;">損益を記録すると統計情報が表示されます</div></div>';
@@ -644,12 +784,12 @@
             }
             
             var cumulativeProfit = 0;
-            for (var date in actualData) {
-                cumulativeProfit += actualData[date];
+            for (var date in appData.actualData) {
+                cumulativeProfit += appData.actualData[date];
             }
             
-            var currentBalance = initialAmount + cumulativeProfit;
-            var budgetProfit = calculateCompoundInterest(initialAmount, 0.01, actualCount) - initialAmount;
+            var currentBalance = appData.initialAmount + cumulativeProfit;
+            var budgetProfit = calculateCompoundInterest(appData.initialAmount, 0.01, actualCount) - appData.initialAmount;
             var performance = budgetProfit > 0 ? ((cumulativeProfit - budgetProfit) / budgetProfit * 100) : 0;
             
             var performanceColor = performance >= 0 ? 'text-green' : 'text-red';
@@ -683,7 +823,7 @@
             var container = document.getElementById('dataList');
             if (!container) return;
             
-            var dates = Object.keys(actualData).sort().reverse();
+            var dates = Object.keys(appData.actualData).sort().reverse();
             
             if (dates.length === 0) {
                 container.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 20px;">損益データがありません</div>';
@@ -693,7 +833,7 @@
             var html = '';
             for (var i = 0; i < dates.length; i++) {
                 var date = dates[i];
-                var profit = actualData[date];
+                var profit = appData.actualData[date];
                 var sign = profit >= 0 ? '+' : '';
                 var color = profit >= 0 ? '#16a34a' : '#dc2626';
                 
@@ -719,29 +859,48 @@
             
             if (chart) {
                 chart.destroy();
+                chart = null;
+            }
+            
+            if (chartScrollbar) {
+                chartScrollbar.destroy();
+                chartScrollbar = null;
             }
             
             var labels = [];
             var budgetData = [];
             var actualBalances = [];
-            var runningBalance = initialAmount;
             
-            // データがある場合の開始日を計算
-            var profitDates = Object.keys(actualData).sort();
-            var startDate;
+            // データがある場合の開始日と終了日を計算
+            var profitDates = Object.keys(appData.actualData).sort();
+            var startDate, endDate;
             
             if (profitDates.length > 0) {
-                // 最初のデータ日から開始
+                // 最初のデータ日から最後のデータ日まで + 予測日数
                 startDate = new Date(profitDates[0]);
+                var lastDataDate = new Date(profitDates[profitDates.length - 1]);
+                endDate = new Date(lastDataDate);
+                endDate.setDate(lastDataDate.getDate() + appData.days);
             } else {
-                // データがない場合は今日から開始
+                // データがない場合は今日から予測期間
                 startDate = new Date(today);
+                endDate = new Date(today);
+                endDate.setDate(today.getDate() + appData.days);
             }
             
-            console.log('開始日:', startDate.toISOString().split('T')[0]);
-            console.log('損益データ:', actualData);
+            // 総日数を計算
+            var totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
             
-            for (var i = 0; i <= days; i++) {
+            console.log('期間:', {
+                startDate: startDate.toISOString().split('T')[0],
+                endDate: endDate.toISOString().split('T')[0],
+                totalDays: totalDays
+            });
+            
+            // 初期残高から開始
+            var runningBalance = appData.initialAmount;
+            
+            for (var i = 0; i <= totalDays; i++) {
                 var currentDate = new Date(startDate);
                 currentDate.setDate(startDate.getDate() + i);
                 var dateStr = currentDate.toISOString().split('T')[0];
@@ -750,27 +909,46 @@
                 var day = currentDate.getDate();
                 labels.push(month + '/' + day);
                 
-                var budgetAmount = calculateCompoundInterest(initialAmount, 0.01, i);
+                // 予算計算（初期残高から複利で増加）
+                var budgetAmount = calculateCompoundInterest(appData.initialAmount, 0.01, i);
                 budgetData.push(Math.round(budgetAmount));
                 
-                if (actualData[dateStr] !== undefined) {
-                    runningBalance += actualData[dateStr];
+                // 実際の残高計算
+                if (i === 0) {
+                    // 最初の日は初期残高を表示
                     actualBalances.push(runningBalance);
-                    console.log(dateStr + ': 損益=' + actualData[dateStr] + ', 累積残高=' + runningBalance);
                 } else {
-                    actualBalances.push(null);
+                    // 前日の日付を計算
+                    var prevDate = new Date(currentDate);
+                    prevDate.setDate(currentDate.getDate() - 1);
+                    var prevDateStr = prevDate.toISOString().split('T')[0];
+                    
+                    // 前日に損益データがあれば加算
+                    if (appData.actualData[prevDateStr] !== undefined) {
+                        runningBalance += appData.actualData[prevDateStr];
+                        actualBalances.push(runningBalance);
+                    } else {
+                        // 損益データがない日で、最後のデータ日を過ぎている場合はnull
+                        if (profitDates.length > 0 && currentDate > new Date(profitDates[profitDates.length - 1])) {
+                            actualBalances.push(null);
+                        } else {
+                            // 損益データがない日は前日の残高を維持
+                            actualBalances.push(runningBalance);
+                        }
+                    }
                 }
             }
             
             console.log('グラフデータ:', {
                 labels: labels.length,
                 budgetData: budgetData.slice(0, 5),
-                actualBalances: actualBalances.filter(x => x !== null)
+                actualBalances: actualBalances.slice(0, 10)
             });
             
             try {
-                if (typeof ChartZoom !== 'undefined') {
-                    Chart.register(ChartZoom);
+                // Chart.js プラグインの登録
+                if (typeof window.chartjs_plugin_zoom !== 'undefined') {
+                    Chart.register(window.chartjs_plugin_zoom);
                 }
                 
                 chart = new Chart(ctx, {
@@ -790,13 +968,14 @@
                             label: '残高',
                             data: actualBalances,
                             borderColor: '#16a34a',
-                            borderWidth: 3,
+                            borderWidth: 2,
                             fill: false,
-                            pointRadius: 6,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
                             pointBackgroundColor: '#16a34a',
                             pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
-                            spanGaps: true,
+                            pointBorderWidth: 1,
+                            spanGaps: false,
                             tension: 0.1
                         }]
                     },
@@ -883,6 +1062,9 @@
                     }
                 });
                 
+                // スクロールバー初期化
+                chartScrollbar = new ChartScrollbarManager(chart);
+                
                 console.log('グラフ作成成功');
                 
             } catch (error) {
@@ -892,7 +1074,7 @@
         }
         
         function zoomIn() {
-            if (chart) {
+            if (chart && chart.zoom) {
                 try {
                     chart.zoom(1.5);
                 } catch (error) {
@@ -902,7 +1084,7 @@
         }
         
         function zoomOut() {
-            if (chart) {
+            if (chart && chart.zoom) {
                 try {
                     chart.zoom(0.67);
                 } catch (error) {
@@ -912,21 +1094,35 @@
         }
         
         function resetChartView() {
-            if (chart) {
+            if (chart && chart.resetZoom) {
                 try {
                     chart.resetZoom();
                 } catch (error) {
                     console.error('リセット失敗:', error);
+                    // プラグインが利用できない場合は通常の表示範囲設定
+                    if (chart.options && chart.options.scales && chart.options.scales.x) {
+                        chart.options.scales.x.min = Math.max(0, chart.data.labels.length - 30);
+                        chart.options.scales.x.max = chart.data.labels.length - 1;
+                        chart.update();
+                    }
                 }
             }
         }
         
         function showRecentDays(dayCount) {
-            if (chart && chart.data.labels.length > 0) {
+            if (chartScrollbar) {
+                chartScrollbar.setViewDays(dayCount);
+                chartScrollbar.scrollToEnd();
+            } else if (chart && chart.data.labels.length > 0) {
                 try {
                     var totalDays = chart.data.labels.length;
                     var startIndex = Math.max(0, totalDays - dayCount);
                     
+                    if (chart.options && chart.options.scales && chart.options.scales.x) {
+                        chart.options.scales.x.min = startIndex;
+                        chart.options.scales.x.max = totalDays - 1;
+                        chart.update();
+                    }
                 } catch (error) {
                     console.error('期間表示失敗:', error);
                 }
@@ -939,25 +1135,21 @@
                 dateInput.value = todayString;
             }
             
-            loadData();
-            
-            document.getElementById('initialAmount').value = initialAmount;
-            document.getElementById('days').value = days;
+            document.getElementById('initialAmount').value = appData.initialAmount;
+            document.getElementById('days').value = appData.days;
             
             document.getElementById('addButton').addEventListener('click', function() {
                 addActualData();
             });
             
             document.getElementById('initialAmount').addEventListener('change', function() {
-                initialAmount = parseFloat(this.value) || 100000;
-                saveData();
+                appData.initialAmount = parseFloat(this.value) || 100000;
                 updateOverallSummary();
                 updateChart();
             });
             
             document.getElementById('days').addEventListener('change', function() {
-                days = parseInt(this.value) || 30;
-                saveData();
+                appData.days = parseInt(this.value) || 30;
                 updateChart();
             });
             
